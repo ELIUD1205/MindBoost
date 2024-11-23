@@ -15,9 +15,6 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Menú")
 
-#Pantallas de carga
-BGLoadingReactionGame = pygame.image.load("assets/BGLoadingReactionGame.png")
-
 #Main Menu
 FondoAzul = pygame.image.load("assets/FondoAzul.png")
 FondoMain = pygame.image.load("assets/FondoMainMenu.png")
@@ -46,9 +43,11 @@ JuegodereaccionSprayS = pygame.image.load("assets/JuegoDeReaccionSprayS.png")
 BGMenuReactionGame = pygame.image.load("assets/BGMenuReactionGame.png")
 BGReactionGame = pygame.image.load("assets/BGReactionGame.png")
 BGTopScoresReactionGame = pygame.image.load("assets/BGTopScoresReactionGame.png")
+BGLoadingReactionGame = pygame.image.load("assets/BGLoadingReactionGame.png")
 Burbuja = pygame.image.load("assets/Burbuja.png")
 POP = pygame.image.load("assets/POP.png")
 Sonido_POP = pygame.mixer.Sound("assets/POP.mp3")
+Sonido_Burbujas = pygame.mixer.Sound("assets/BurbujasLoading.mp3")
 
 #Define la función para dar tipografia a los textos
 def get_font(size):
@@ -220,6 +219,7 @@ def menu_reaction_game():
     loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
     while True:
+        Sonido_Burbujas.play()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
@@ -239,6 +239,7 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
+            Sonido_Burbujas.play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
@@ -390,6 +391,7 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
+            Sonido_Burbujas.play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
@@ -407,6 +409,7 @@ def menu_reaction_game():
             loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
             while True:
+                Sonido_Burbujas.play()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                         pygame.quit()
@@ -564,6 +567,7 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
+            Sonido_Burbujas.play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
