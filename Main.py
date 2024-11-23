@@ -1,4 +1,4 @@
-import pygame, sys, random, json
+import pygame, sys, random, json, time
 #Importar la clase Button del codigo button
 from button import Button
 #Importar la clase Spray del codigo spray
@@ -67,6 +67,27 @@ def contorno(text, font, text_color, outline_color, x, y):
     screen.blit(text_surface, text_rect.move(8, -8))   # Arriba derecha
     screen.blit(text_surface, text_rect.move(-8, 8))   # Abajo izquierda
     screen.blit(text_surface, text_rect.move(8, 8))    # Abajo derecha
+
+    # Renderiza el texto principal en el color deseado
+    text_surface = font.render(text, True, text_color)
+    screen.blit(text_surface, text_rect)
+
+def contorno1(text, font, text_color, outline_color, x, y):
+    # Renderiza el texto en el color del borde
+    text_surface = font.render(text, True, outline_color)
+    text_rect = text_surface.get_rect(center=(x, y))
+
+    # Dibuja el contorno en todas las direcciones alrededor del texto
+    screen.blit(text_surface, text_rect.move(-3, 0))  # Izquierda
+    screen.blit(text_surface, text_rect.move(3, 0))   # Derecha
+    screen.blit(text_surface, text_rect.move(0, -3))  # Arriba
+    screen.blit(text_surface, text_rect.move(0, 3))   # Abajo
+
+    # Dibuja las esquinas del contorno
+    screen.blit(text_surface, text_rect.move(-3, -3))  # Arriba izquierda
+    screen.blit(text_surface, text_rect.move(3, -3))   # Arriba derecha
+    screen.blit(text_surface, text_rect.move(-3, 3))   # Abajo izquierda
+    screen.blit(text_surface, text_rect.move(3, 3))    # Abajo derecha
 
     # Renderiza el texto principal en el color deseado
     text_surface = font.render(text, True, text_color)
@@ -380,7 +401,7 @@ def menu_reaction_game():
                 tiempo_actual = pygame.time.get_ticks() - tiempo_inicio
     
                 # Game Over
-                if tiempo_vida == 7500:
+                if tiempo_vida == 7800:
                     tutorial_reaction_game()
 
                 # Si estamos mostrando la imagen de reemplazo, verificar el tiempo transcurrido
@@ -422,7 +443,7 @@ def menu_reaction_game():
                         if dist <= radio_actual_burbuja:
                             # Acierto, aumentar puntaje y reducir tiempo de vida
                             puntaje += 1
-                            tiempo_vida = max(500, tiempo_vida - 50)
+                            tiempo_vida = max(500, tiempo_vida - 20)
                 
                             # Cambiar temporalmente a la imagen de reemplazo
                             mostrar_reemplazo = True
@@ -439,10 +460,20 @@ def menu_reaction_game():
             screen.blit(BGTopScoresReactionGame, (0,0))
             contorno("TUTORIAL", get_font(100), "#2e67a5", "black", 640, 100)
 
-            Tutorial_reaction_game_b = Button(image=pygame.image.load("assets/ReactionGameButton.png"), pos=(640, 620), 
+            contorno1("Bienvenido a Reaction Game", get_font(40), "#fa8cb4", "black", 640, 200)
+            contorno1("¡Pon a prueba tu velocidad!", get_font(40), "#fa8cb4", "black", 640, 250)
+            contorno1("En el juego, aparecerán burbujas en la pantalla", get_font(40), "#fa8cb4", "black", 640, 300)
+            contorno1("deberás tocar antes de que desaparezcan. Si logras", get_font(40), "#fa8cb4", "black", 640, 350)
+            contorno1("tocarlas, continuarás jugando; si no lo haces, el", get_font(40), "#fa8cb4", "black", 640, 400)
+            contorno1("juego se acaba. Entre más burbujas toques, más", get_font(40), "#fa8cb4", "black", 640, 450)
+            contorno1("rápido se volverá el juego.", get_font(40), "#fa8cb4", "black", 640, 500)
+
+            Tutorial_reaction_game_b = Button(image=pygame.image.load("assets/ReactionGameButton.png"), pos=(320, 620), 
                             text_input="TUTORIAL", font=get_font(65), base_color="#000000", hovering_color="White")
+            Back_tutorial_reaction_game_button = Button(image=pygame.image.load("assets/ReactionGameButton.png"), pos=(960, 620), 
+                            text_input="BACK", font=get_font(65), base_color="#000000", hovering_color="White")
             
-            for button in [Tutorial_reaction_game_b]:
+            for button in [Tutorial_reaction_game_b, Back_tutorial_reaction_game_button]:
                 button.changeColor(Tutorial_reaction_game_mouse_pos)
                 button.update(screen)
 
@@ -453,6 +484,8 @@ def menu_reaction_game():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if Tutorial_reaction_game_b.checkForInput(Tutorial_reaction_game_mouse_pos):
                         tutorialreactiongame()
+                    if Back_tutorial_reaction_game_button.checkForInput(Tutorial_reaction_game_mouse_pos):
+                        menu_reaction_game()
             pygame.display.update()
     
     def score_reaction_game():
@@ -688,9 +721,10 @@ def get_player_name():
         screen.blit(Biomind, (1200, 640))
         Brain_rect = Brain.get_rect(center=(640,70))
         screen.blit(Brain, Brain_rect)
+        get_player_name_mouse_pos = pygame.mouse.get_pos()
         
         contorno("MINDBOOST", get_font(100), "#d08159", "black", 640, 170)
-        Enter_your_name = get_font(60).render("ENTER YOUR NAME:", True, "#ffecd6")
+        Enter_your_name = get_font(60).render("ENTER YOUR NICKNAME:", True, "#ffecd6")
         Enter_your_name_rect = Enter_your_name.get_rect(center=(640, 300))
         screen.blit(Enter_your_name, Enter_your_name_rect)
 
@@ -700,20 +734,37 @@ def get_player_name():
         pygame.draw.rect(screen, "#9c6244", input_rect, 10, border_radius=10)  # Contorno del rectángulo
         pygame.draw.rect(screen, "black", input_rect, 6, border_radius=10)  # Contorno del rectángulo
 
+        Quit_button = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
+                            text_input="QUIT", font=get_font(75), base_color="#000000", hovering_color="White")
+        
+        for button in [Quit_button]:
+            button.changeColor(get_player_name_mouse_pos)
+            button.update(screen)
+
         # Mostrar el nombre ingresado hasta ahora
         name_text = get_font(50).render(name, True, "#ffecd6")
         name_text_rect = name_text.get_rect(center=(640, 415))
         screen.blit(name_text, name_text_rect)
 
         if len(name) == 3:
-            Press_enter = get_font(30).render("PRESS ENTER TO CONTINUE", True, "#ffecd6")
+            Press_enter = get_font(30).render("PRESS THE ENTER KEY TO CONTINUE", True, "#ffecd6")
             Press_enter_rect = Press_enter.get_rect(center=(640, 480))
             screen.blit(Press_enter, Press_enter_rect)
 
-        if len(name) > 0 and len(name) < 3:
-            warning_text = get_font(30).render("ENTER 3 LETTERS TO CONTINUE", True, "#ffecd6")
+        if len(name) > 0 and len(name) < 2:
+            warning_text = get_font(30).render("ENTER 2 LETTERS TO CONTINUE", True, "#ffecd6")
             warning_rect = warning_text.get_rect(center=(640, 480))
             screen.blit(warning_text, warning_rect)
+
+        if len(name) > 1 and len(name) < 3:
+            warning_text = get_font(30).render("ENTER 1 LETTER TO CONTINUE", True, "#ffecd6")
+            warning_rect = warning_text.get_rect(center=(640, 480))
+            screen.blit(warning_text, warning_rect)
+
+        if len(name) == 0:
+            Press_enter = get_font(30).render("ENTER ONLY 3 LETTERS", True, "#ffecd6")
+            Press_enter_rect = Press_enter.get_rect(center=(640, 480))
+            screen.blit(Press_enter, Press_enter_rect)
 
         pygame.display.flip()
 
@@ -721,6 +772,10 @@ def get_player_name():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if Quit_button.checkForInput(get_player_name_mouse_pos):
+                    pygame.quit()
+                    sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and len(name) == 3:
                     return name
