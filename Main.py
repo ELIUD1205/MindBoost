@@ -1,8 +1,9 @@
 import pygame, sys, random, json, time
 #Importar la clase Button del codigo button
-from button import Button
+from utils.button import Button
 #Importar la clase Spray del codigo spray
-from spray import Spray
+from utils.spray import Spray
+from utils.loadingbar import LoadingBar
 
 #Iniciar pygame
 pygame.init()
@@ -13,6 +14,9 @@ pygame.mixer.init()
 #Configurar la pantalla
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Menú")
+
+#Pantallas de carga
+BGLoadingReactionGame = pygame.image.load("assets/BGLoadingReactionGame.png")
 
 #Main Menu
 FondoAzul = pygame.image.load("assets/FondoAzul.png")
@@ -95,6 +99,20 @@ def contorno1(text, font, text_color, outline_color, x, y):
 
 def games():
     pygame.display.set_caption("Games")
+    loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
 
     while True:
         screen.blit(FondoMain, [0, 0])
@@ -146,6 +164,20 @@ def games():
 
 def about():
     pygame.display.set_caption("About")
+    loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
 
     while True:
         Play_mouse_pos = pygame.mouse.get_pos()
@@ -153,39 +185,22 @@ def about():
         screen.blit(FondoMain, [0, 0])
         screen.blit(Biomind, (1200, 640))
 
-        Biomind_titeld = get_font(60).render("GAME BY BIOMIND STUDIO", True, "#d08159")
-        Biomind_titeld_rect = Biomind_titeld.get_rect(center=(640,100))
-        screen.blit(Biomind_titeld, Biomind_titeld_rect)
-        About_P1 = get_font(30).render("MindBoost es un videojuego serio diseñado para la estimulación cognitiva.", True, "#ffecd6")
-        About_P1_rect = About_P1.get_rect(center=(640,180))
-        screen.blit(About_P1, About_P1_rect)
-        About_P2 = get_font(30).render("El objetivo es fortalecer habilidades mentales, como la memoria,", True, "#ffecd6")
-        About_P2_rect = About_P2.get_rect(center=(640,230))
-        screen.blit(About_P2, About_P2_rect)
-        About_P3 = get_font(30).render("la concentración y agilidad mental, a través de juegos interactivos.", True, "#ffecd6")
-        About_P3_rect = About_P3.get_rect(center=(640,280))
-        screen.blit(About_P3, About_P3_rect)
-        About_members = get_font(40).render("MEMBERS", True, "#d08159")
-        About_members_rect = About_members.get_rect(center=(640,360))
-        screen.blit(About_members, About_members_rect)
-        About_members_eliud = get_font(20).render("JORGE ELIUD JIMENEZ NAJAR", True, "#ffecd6")
-        About_members_eliud_rect = About_members_eliud.get_rect(center=(640,420))
-        screen.blit(About_members_eliud, About_members_eliud_rect)
-        About_members_irais = get_font(20).render("IRAIS GUADALUPE SOLANO ROSAS", True, "#ffecd6")
-        About_members_irais_rect = About_members_irais.get_rect(center=(640,450))
-        screen.blit(About_members_irais, About_members_irais_rect)
-        About_members_ammi = get_font(20).render("AMMI PAHOLA RODRIGUEZ SALGADO", True, "#ffecd6")
-        About_members_ammi_rect = About_members_ammi.get_rect(center=(640,480))
-        screen.blit(About_members_ammi, About_members_ammi_rect)
-        About_members_pablo = get_font(20).render("PABLO AZGAD CAMARENA MENDOZA", True, "#ffecd6")
-        About_members_pablo_rect = About_members_pablo.get_rect(center=(640,510))
-        screen.blit(About_members_pablo, About_members_pablo_rect)
-        About_members_luis = get_font(20).render("LUIS ALBERTO MARTEL ORDOÑEZ", True, "#ffecd6")
-        About_members_luis_rect = About_members_luis.get_rect(center=(640,540))
-        screen.blit(About_members_luis, About_members_luis_rect)
+        contorno1("GAME BY BIOMIND STUDIO", get_font(60), "#d08159", "black", 640, 100)
 
-        About_back = Button(image=None, pos=(640, 620), 
-                            text_input="BACK", font=get_font(60), base_color="#d08159", hovering_color="#ffecd6")
+        contorno1("MindBoost es un videojuego serio diseñado para la estimulación cognitiva.", get_font(30), "#ffecd6", "black", 640, 180)
+        contorno1("El objetivo es fortalecer habilidades mentales, como la memoria,", get_font(30), "#ffecd6", "black", 640, 230)
+        contorno1("la concentración y agilidad mental, a través de juegos interactivos.", get_font(30), "#ffecd6", "black", 640, 280)
+
+        contorno1("MEMBERS", get_font(40), "#d08159", "black", 640, 360)
+
+        contorno1("JORGE ELIUD JIMENEZ NAJAR", get_font(20), "#ffecd6", "black", 640, 420)
+        contorno1("IRAIS GUADALUPE SOLANO ROSAS", get_font(20), "#ffecd6", "black", 640, 450)
+        contorno1("AMMI PAHOLA RODRIGUEZ SALGADO", get_font(20), "#ffecd6", "black", 640, 480)
+        contorno1("PABLO AZGAD CAMARENA MENDOZA", get_font(20), "#ffecd6", "black", 640, 510)
+        contorno1("LUIS ALBERTO MARTEL ORDOÑEZ", get_font(20), "#ffecd6", "black", 640, 540)
+
+        About_back = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 640), 
+                            text_input="BACK", font=get_font(75), base_color="#000000", hovering_color="White")
 
         About_back.changeColor(Play_mouse_pos)
         About_back.update(screen)
@@ -202,11 +217,39 @@ def about():
 
 def menu_reaction_game():
     pygame.display.set_caption("Menú Reaction Game")
+    loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
 
     Scores_file = "Top_scores_reaction_game.json"
 
     def reaction_games():
         pygame.display.set_caption("Reaction Game")
+        loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
 
         ancho, alto = 1280, 720
 
@@ -344,9 +387,37 @@ def menu_reaction_game():
 
     def tutorial_reaction_game():
         pygame.display.set_caption("Tutorial Reaction Game")
+        loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
         
         def tutorialreactiongame():
             pygame.display.set_caption("Reaction Game")
+            loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                        pygame.quit()
+                        sys.exit()
+
+                # Dibujar la barra de carga
+                if loading_bar.draw():  # Si la barra de carga está llena
+                    break  # Detener el bucle principal cuando la barra esté llena
+
+                # Esperar un poco para que el evento de carga se vea
+                pygame.time.wait(100)
 
             ancho, alto = 1280, 720
 
@@ -490,6 +561,20 @@ def menu_reaction_game():
     
     def score_reaction_game():
         pygame.display.set_caption("Score Reaction Game")
+        loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
 
         # Función para cargar los puntajes
         def load_scores():
@@ -674,6 +759,20 @@ def menu_colores_y_figuras():
 
 def main_menu():
     pygame.display.set_caption("Menú")
+    loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
     
     while True:
         screen.blit(FondoMain, [0, 0])
@@ -702,7 +801,7 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if Games_button.checkForInput(Menu_mouse_pos):
-                    games()
+                        games()
                 if About_button.checkForInput(Menu_mouse_pos):
                     about()
                 if Quit_button.checkForInput(Menu_mouse_pos):

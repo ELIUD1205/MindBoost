@@ -13,13 +13,13 @@ class LoadingBar:
         self.segments = segments
 
         # Fuente para el texto de carga
-        self.font = pygame.font.Font(None, 36)
-        self.text = self.font.render("Loading...", True, self.text_color)
-        self.text_rect = self.text.get_rect(center=(screen.get_width() // 2, 200))
+        self.font = pygame.font.Font("assets/font.ttf", 80)  # Ajusta la ruta si es necesario
+        self.text = "LOADING..."
+        self.text_rect = None  # Será inicializado al renderizar el texto
 
         # Configuración de la barra
-        self.bar_width = 60
-        self.bar_height = 40
+        self.bar_width = 80
+        self.bar_height = 60
         self.gap = 10
 
         # Coordenadas de la barra
@@ -37,6 +37,21 @@ class LoadingBar:
         b = start_color[2] + (end_color[2] - start_color[2]) * t
         return (int(r), int(g), int(b))
 
+    def render_text_with_outline(self, text, font, text_color, outline_color, x, y):
+        """Renderiza un texto con un contorno alrededor."""
+        # Renderizar texto con el color del borde
+        outline_surface = font.render(text, True, outline_color)
+        outline_rect = outline_surface.get_rect(center=(x, y))
+
+        # Dibujar el contorno en todas las direcciones
+        offsets = [(-8, 0), (8, 0), (0, -8), (0, 8), (-8, -8), (8, -8), (-8, 8), (8, 8)]
+        for dx, dy in offsets:
+            self.screen.blit(outline_surface, outline_rect.move(dx, dy))
+
+        # Dibujar el texto principal en el centro
+        text_surface = font.render(text, True, text_color)
+        self.screen.blit(text_surface, outline_rect)
+
     def draw(self):
         """Dibuja la barra de carga y el texto."""
         elapsed_time = time.time() - self.start_time
@@ -48,8 +63,12 @@ class LoadingBar:
         else:
             self.screen.fill((255, 255, 255))  # Fondo blanco si no hay imagen
 
-        # Mostrar texto "Cargando..."
-        self.screen.blit(self.text, self.text_rect)
+        # Mostrar texto "Loading..." con contorno
+        if not self.text_rect:  # Solo calcular el rectángulo una vez
+            self.text_rect = self.font.render(self.text, True, self.text_color).get_rect(
+                center=(self.screen.get_width() // 2, 275)
+            )
+        self.render_text_with_outline(self.text, self.font, self.text_color, (0, 0, 0), self.text_rect.centerx, self.text_rect.centery)
 
         # Dibujar los segmentos de la barra
         for i in range(self.segments):
@@ -75,44 +94,5 @@ class LoadingBar:
         # Detener cuando todos los segmentos estén llenos
         return filled_segments >= self.segments
 
-# --- Ejemplo de cómo llamar a la clase y usarla en otro código ---
-
-# Inicialización de Pygame
-pygame.init()
-
-# Configurar la ventana
-screen = pygame.display.set_mode((800, 600))
-pygame.display.set_caption("Barra de Carga con Degradado")
-
-# Definir los colores y la imagen de fondo (puedes cambiar el color o añadir una imagen de fondo)
-START_COLOR = (255, 212, 163)  # Color inicial (Rojo claro)
-END_COLOR = (208, 129, 89)    # Color final (Naranja)
-TEXT_COLOR = (255, 255, 255)   # Color del texto (Blanco)
-
-# Cargar una imagen de fondo (opcional)
-try:
-    bg_image = pygame.image.load("assets/FondoMainMenu.png")  # Si tienes una imagen de fondo
-except pygame.error:
-    bg_image = None  # Si no tienes una imagen, se usará un fondo blanco
-
-# Crear una instancia de la clase LoadingBar
-loading_bar = LoadingBar(screen, bg_image, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color=(255, 255, 255) , loading_time=5, segments=10)
-
-# Bucle principal
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # Salir si se cierra la ventana
-            running = False
-
-    # Dibujar la barra de carga
-    if loading_bar.draw():
-        running = False  # Salir cuando la barra esté llena
-
-    # Esperar un poco para que el evento de carga se vea
-    pygame.time.wait(100)
-
-# Finalizar Pygame
-pygame.quit()
 
 
