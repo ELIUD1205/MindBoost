@@ -28,6 +28,13 @@ Brain = pygame.image.load("assets/Brain.png")
 #Simon Dice
 SimondiceSpray = pygame.image.load("assets/SimonDiceSpray.png")
 SimondiceSprayS = pygame.image.load("assets/SimonDiceSprayS.png")
+BGSimonDice = pygame.image.load("assets/BGSimonDicePlay.png").convert()
+SimonDiceButtonRed = pygame.image.load("assets/SimonDiceButtonRed.png")
+SimonDiceButtonGreen = pygame.image.load("assets/SimonDiceButtonGreen.png")
+SimonDiceButtonBlue = pygame.image.load("assets/SimonDiceButtonBlue.png")
+SimonDiceButtonYellow = pygame.image.load("assets/SimonDiceButtonYellow.png")
+BGSimonDiceMenu = pygame.image.load("assets/BGSimonDiceMainMenu.png")
+BGSimonDiceLoading = pygame.image.load("assets/BGSimonDiceLoading.png")
 
 #Puzzle Numerico
 PuzzlenumericoSpray = pygame.image.load("assets/PuzzleNumericoSpray.png")
@@ -670,32 +677,186 @@ def menu_reaction_game():
 
 def menu_simon_dice():
     pygame.display.set_caption("Simon Dice")
+    loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
+
+    def simon_dice():
+        pygame.init()
+
+        # Configuración de pantalla
+        size = (1280, 800)
+        pygame.display.set_caption("Simón Dice")
+        clock = pygame.time.Clock()  # Para limitar los FPS
+
+        score = 0
+
+        # Cargar imágenes
+        imagenes = {
+            "ROJO": pygame.image.load("assets/RED.png").convert(),
+            "VERDE": pygame.image.load("assets/GREEN.png").convert(),
+            "AZUL": pygame.image.load("assets/BLUE.png").convert(),
+            "AMARILLO": pygame.image.load("assets/YELLOW.png").convert(),
+        }
+        imagenes_highlight = {
+            "ROJO": pygame.image.load("assets/RED_SEC.png").convert(),
+            "VERDE": pygame.image.load("assets/GREEN_SEC.png").convert(),
+            "AZUL": pygame.image.load("assets/BLUE_SEC.png").convert(),
+            "AMARILLO": pygame.image.load("assets/YELLOW_SEC.png").convert(),
+        }
+
+
+        # Tamaño de los botones y posiciones
+        boton_tamaño = 200
+        espacio = 50
+        inicio_x = (size[0] - (2 * boton_tamaño + espacio)) // 2
+        inicio_y = (size[1] - (2 * boton_tamaño + espacio)) // 2
+
+        botones = {
+            "ROJO": pygame.Rect(inicio_x, inicio_y, boton_tamaño, boton_tamaño),
+            "VERDE": pygame.Rect(inicio_x + boton_tamaño + espacio, inicio_y, boton_tamaño, boton_tamaño),
+            "AZUL": pygame.Rect(inicio_x, inicio_y + boton_tamaño + espacio, boton_tamaño, boton_tamaño),
+            "AMARILLO": pygame.Rect(inicio_x + boton_tamaño + espacio, inicio_y + boton_tamaño + espacio, boton_tamaño, boton_tamaño),
+        }
+
+        secuencia = []
+        player_secuencia = []
+        inicio_juego = True  # Para manejar la pausa inicial
+        inicio_tiempo = pygame.time.get_ticks()  # Capturar tiempo inicial
+
+        def dibujar_botones(highlight=None):
+            screen.blit(BGSimonDice, (0,0))
+
+            # Mostrar puntaje
+            contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+
+            for color, rect in botones.items():
+                if highlight == color:
+                    screen.blit(imagenes_highlight[color], rect)
+                else:
+                    screen.blit(imagenes[color], rect)
+            pygame.display.update([rect for rect in botones.values()])
+            pygame.display.flip()
+
+        def mostrar_mensaje(texto, color=(255, 255, 255), tamaño=50):
+            contorno1(texto, get_font(tamaño), color, "black", size[0] // 2, size[1] // 2)
+            pygame.display.flip()
+
+
+        def play_secuencia(seq):
+            screen.blit(BGSimonDice, (0, 0))  # Redibuja el fondo
+            contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+            mostrar_mensaje("GENERANDO SECUENCIA...", tamaño=80, color="#f0f6f0")
+            pygame.time.delay(3000)  # Pausa para leer el mensaje
+
+            for color in seq:
+                dibujar_botones(color)
+                pygame.time.delay(1000)
+                dibujar_botones()
+                pygame.time.delay(200)
+
+            # Mostrar mensaje "Tu turno"
+            screen.blit(BGSimonDice, (0, 0))  # Redibuja el fondo
+            contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+            mostrar_mensaje("¡TU TURNO!", tamaño=80, color="#f0f6f0")
+            pygame.time.delay(3000)  # Pausa para leer el mensaje
+
+
+        def añadir_color_random(seq):
+            color = random.choice(list(botones.keys()))
+            seq.append(color)
+
+        def revisar_player_secuencia():
+            for i in range(len(player_secuencia)):
+                if player_secuencia[i] != secuencia[i]:
+                    return False
+            return True
+
+        añadir_color_random(secuencia)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                if not inicio_juego and event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    for color, rect in botones.items():
+                        if rect.collidepoint(pos):
+                            player_secuencia.append(color)
+                            dibujar_botones(color)
+                            pygame.time.delay(300)
+                            dibujar_botones()
+
+                            if not revisar_player_secuencia():
+                                print("Secuencia incorrecta! Intenta de nuevo.")
+                                player_secuencia = []
+                                pygame.time.delay(2000)
+                                play_secuencia(secuencia)
+                            if len(player_secuencia) == len(secuencia):
+                                score = score + 1
+                                print("¡Secuencia correcta!")
+                                print(score)
+                                player_secuencia = []
+                                pygame.time.delay(2000)
+                                añadir_color_random(secuencia)
+                                play_secuencia(secuencia)
+
+            if inicio_juego:
+                tiempo_actual = pygame.time.get_ticks()
+                if tiempo_actual - inicio_tiempo > 2000:
+                    inicio_juego = False
+                    play_secuencia(secuencia)
+        
+            dibujar_botones()
+            clock.tick(60)  # Limitar FPS a 60
 
     while True:
-        screen.fill("black")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
 
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
+
+    while True:
+        screen.blit(BGSimonDiceMenu, (0,0))
         simon_dice_mouse_pos = pygame.mouse.get_pos()
 
-        Biomind_titeld = get_font(30).render("Aqui iria el juego...", True, "#d08159")
-        Biomind_titeld_rect = Biomind_titeld.get_rect(center=(640,100))
-        screen.blit(Biomind_titeld, Biomind_titeld_rect)
-        About_P1 = get_font(30).render("Si tuviera uno", True, "#ffecd6")
-        About_P1_rect = About_P1.get_rect(center=(640,140))
-        screen.blit(About_P1, About_P1_rect)
+        contorno1("SIMON DICE", get_font(60), "#f0f6f0", "black", 640, 45)
 
-        simon_dice_exit = Button(image=None, pos=(640, 620), 
-                            text_input="EXIT", font=get_font(60), base_color="#d08159", hovering_color="#ffecd6")
+        SimondiceSpray_rect = SimondiceSpray.get_rect(center=(635,400))
+        screen.blit(SimondiceSpray, SimondiceSpray_rect)
 
-        simon_dice_exit.changeColor(simon_dice_mouse_pos)
-        simon_dice_exit.update(screen)
-
+        Play_simon_dice_button = Button(image=pygame.image.load("assets/SimonDiceButtonRed.png"), pos=(320, 200), 
+                            text_input="PLAY", font=get_font(65), base_color="#000000", hovering_color="White")
+        Tutorial_simon_dice_button = Button(image=pygame.image.load("assets/SimonDiceButtonGreen.png"), pos=(950, 200), 
+                            text_input="TUTORIAL", font=get_font(65), base_color="#000000", hovering_color="White")
+        Back_simon_dice_button = Button(image=pygame.image.load("assets/SimonDiceButtonBlue.png"), pos=(320, 600), 
+                            text_input="BACK", font=get_font(65), base_color="#000000", hovering_color="White")
+        Score_simon_dice_button = Button(image=pygame.image.load("assets/SimonDiceButtonYellow.png"), pos=(950, 600), 
+                            text_input="SCORE", font=get_font(65), base_color="#000000", hovering_color="White")
+        
+        for button in [Play_simon_dice_button, Tutorial_simon_dice_button, Back_simon_dice_button, Score_simon_dice_button]:
+            button.changeColor(simon_dice_mouse_pos)
+            button.update(screen)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if simon_dice_exit.checkForInput(simon_dice_mouse_pos):
+                if Play_simon_dice_button.checkForInput(simon_dice_mouse_pos):
+                    simon_dice()
+                if Back_simon_dice_button.checkForInput(simon_dice_mouse_pos):
                     games()
+                if Tutorial_simon_dice_button.checkForInput(simon_dice_mouse_pos):
+                    tutorial_reaction_game()
+                if Score_simon_dice_button.checkForInput(simon_dice_mouse_pos):
+                    score_reaction_game()
 
         pygame.display.update()
 
