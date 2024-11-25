@@ -35,6 +35,8 @@ SimonDiceButtonBlue = pygame.image.load("assets/SimonDiceButtonBlue.png")
 SimonDiceButtonYellow = pygame.image.load("assets/SimonDiceButtonYellow.png")
 BGSimonDiceMenu = pygame.image.load("assets/BGSimonDiceMainMenu.png")
 BGSimonDiceLoading = pygame.image.load("assets/BGSimonDiceLoading.png")
+ExitButtonSimonDice = pygame.image.load("assets/ExitButtonSimonDice.png")
+jugando = False
 
 #Puzzle Numerico
 PuzzlenumericoSpray = pygame.image.load("assets/PuzzleNumericoSpray.png")
@@ -680,13 +682,9 @@ def menu_simon_dice():
     loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
 
     def simon_dice():
-        pygame.init()
-
-        # Configuración de pantalla
         size = (1280, 800)
         pygame.display.set_caption("Simón Dice")
         clock = pygame.time.Clock()  # Para limitar los FPS
-
         score = 0
 
         # Cargar imágenes
@@ -722,11 +720,50 @@ def menu_simon_dice():
         inicio_juego = True  # Para manejar la pausa inicial
         inicio_tiempo = pygame.time.get_ticks()  # Capturar tiempo inicial
 
+        # Cargar imágenes de corazones
+        corazon = pygame.image.load("assets/Heart.png").convert_alpha()
+        corazon_tamaño = (50, 50)  # Tamaño de los corazones
+        corazon1 = pygame.transform.scale(corazon, corazon_tamaño)
+        corazon_vacio = pygame.image.load("assets/Heart-1.png").convert_alpha()
+        corazon_vacio1 = pygame.transform.scale(corazon_vacio, corazon_tamaño)
+
+        # Configuración de vidas
+        max_vidas = 3
+        vidas = max_vidas
+
+        SimonDice_exit = Button(ExitButtonSimonDice, pos=(1104, 644), 
+                                text_input="EXIT", font=get_font(40), base_color="#f0f6f0", hovering_color="#b8b5b9")
+
+        # Función para dibujar corazones
+        def dibujar_vidas(vidas):
+            for i in range(max_vidas):
+                x = 50 + i * (corazon_tamaño[0] + 10)
+                y = 120
+                if i < vidas:
+                    screen.blit(corazon1, (x, y))  # Corazón lleno
+                else:
+                    screen.blit(corazon_vacio1, (x, y))  # Corazón vacío
+        
+        def dibujar_vidas_grande(vidas):
+            for i in range(max_vidas):
+                x = 330 + i * (200 + 10)
+                y = 300
+                if i < vidas:
+                    screen.blit(corazon, (x, y))  # Corazón lleno
+                else:
+                    screen.blit(corazon_vacio, (x, y))  # Corazón vacío
+
         def dibujar_botones(highlight=None):
             screen.blit(BGSimonDice, (0,0))
 
             # Mostrar puntaje
             contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+
+            if jugando == True:
+                SimonDice_exit.update(screen)
+                SimonDice_exit.changeColor(simon_dice_mouse_pos)
+
+            dibujar_vidas(vidas)
 
             for color, rect in botones.items():
                 if highlight == color:
@@ -736,12 +773,15 @@ def menu_simon_dice():
             pygame.display.update([rect for rect in botones.values()])
             pygame.display.flip()
 
-        def mostrar_mensaje(texto, color=(255, 255, 255), tamaño=50):
-            contorno1(texto, get_font(tamaño), color, "black", size[0] // 2, size[1] // 2)
+        def mostrar_mensaje(texto, color=(255, 255, 255), tamaño=50, x=size[0] // 2, y=size[1] // 2):
+            contorno1(texto, get_font(tamaño), color, "black", x, size[1] // 2)
             pygame.display.flip()
 
-
         def play_secuencia(seq):
+            global jugando
+            jugando = False
+            print(f"Estado de jugando: {jugando}")
+
             screen.blit(BGSimonDice, (0, 0))  # Redibuja el fondo
             contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
             mostrar_mensaje("GENERANDO SECUENCIA...", tamaño=80, color="#f0f6f0")
@@ -751,13 +791,16 @@ def menu_simon_dice():
                 dibujar_botones(color)
                 pygame.time.delay(1000)
                 dibujar_botones()
-                pygame.time.delay(200)
+                pygame.time.delay(1000)
 
             # Mostrar mensaje "Tu turno"
             screen.blit(BGSimonDice, (0, 0))  # Redibuja el fondo
             contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
             mostrar_mensaje("¡TU TURNO!", tamaño=80, color="#f0f6f0")
             pygame.time.delay(3000)  # Pausa para leer el mensaje
+
+            jugando = True
+            print(f"Estado de jugando: {jugando}")
 
 
         def añadir_color_random(seq):
@@ -773,30 +816,49 @@ def menu_simon_dice():
         añadir_color_random(secuencia)
 
         while True:
+            simon_dice_mouse_pos = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-                if not inicio_juego and event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
+
+                if jugando == True and event.type == pygame.MOUSEBUTTONDOWN:
+                    if SimonDice_exit.checkForInput(simon_dice_mouse_pos):
+                        menu_simon_dice()
                     for color, rect in botones.items():
-                        if rect.collidepoint(pos):
+                        if rect.collidepoint(simon_dice_mouse_pos):
                             player_secuencia.append(color)
                             dibujar_botones(color)
                             pygame.time.delay(300)
                             dibujar_botones()
 
                             if not revisar_player_secuencia():
-                                print("Secuencia incorrecta! Intenta de nuevo.")
+                                vidas -= 1
+                                screen.blit(BGSimonDice, (0,0))
+                                contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+                                mostrar_mensaje("¡SECUENCIA INCORRECTA!", tamaño=80, color="#b45252")
+                                pygame.time.delay(3000)
+                                screen.blit(BGSimonDice, (0,0))
+                                contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+                                dibujar_vidas_grande(vidas)
+                                pygame.display.flip()
+                                pygame.time.delay(3000)
                                 player_secuencia = []
-                                pygame.time.delay(2000)
+
+                                if vidas <= 0:
+                                    mostrar_mensaje("GAME OVER", tamaño=80, color="#FF0000")
+                                    pygame.time.delay(3000)
+                                    pygame.quit()
+                                    return
+                                
                                 play_secuencia(secuencia)
                             if len(player_secuencia) == len(secuencia):
-                                score = score + 1
-                                print("¡Secuencia correcta!")
-                                print(score)
+                                score += 1
+                                screen.blit(BGSimonDice, (0,0))
+                                contorno1(f"SCORE: {score}", get_font(50), "#f0f6f0", "black", 640, 40)
+                                mostrar_mensaje("¡SECUENCIA CORRECTA!", tamaño=80, color="#8ab060")
+                                pygame.time.delay(3000)
                                 player_secuencia = []
-                                pygame.time.delay(2000)
                                 añadir_color_random(secuencia)
                                 play_secuencia(secuencia)
 
@@ -805,9 +867,9 @@ def menu_simon_dice():
                 if tiempo_actual - inicio_tiempo > 2000:
                     inicio_juego = False
                     play_secuencia(secuencia)
-        
+
             dibujar_botones()
-            clock.tick(60)  # Limitar FPS a 60
+            clock.tick(30)
 
     while True:
         for event in pygame.event.get():

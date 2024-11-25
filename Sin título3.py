@@ -1,116 +1,172 @@
 import pygame
 import random
 
-def main():
-    pygame.init()
+class SimonDiceGame:
+    def __init__(self):
+        # Inicialización de Pygame
+        pygame.init()
+        self.size = (1280, 800)
+        self.screen = pygame.display.set_mode(self.size)
+        pygame.display.set_caption("Simón Dice")
+        self.clock = pygame.time.Clock()
+        
+        # Configuración de juego
+        self.score = 0
+        self.vidas = 3
+        self.max_vidas = 3
+        self.secuencia = []
+        self.player_secuencia = []
+        self.inicio_juego = True
+        self.inicio_tiempo = pygame.time.get_ticks()
+        
+        # Tamaño de botones
+        self.boton_tamaño = 200
+        self.espacio = 50
+        self.inicio_x = (self.size[0] - (2 * self.boton_tamaño + self.espacio)) // 2
+        self.inicio_y = (self.size[1] - (2 * self.boton_tamaño + self.espacio)) // 2
 
-    # Configuración de pantalla
-    size = (1280, 720)
-    screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("Simón Dice")
-    clock = pygame.time.Clock()  # Para limitar los FPS
+        # Recursos
+        self.cargar_imagenes()
+        self.crear_botones()
+        
+    def cargar_imagenes(self):
+        # Cargar imágenes de colores
+        self.imagenes = {
+            "ROJO": pygame.image.load("assets/RED.png").convert(),
+            "VERDE": pygame.image.load("assets/GREEN.png").convert(),
+            "AZUL": pygame.image.load("assets/BLUE.png").convert(),
+            "AMARILLO": pygame.image.load("assets/YELLOW.png").convert(),
+        }
+        self.imagenes_highlight = {
+            "ROJO": pygame.image.load("assets/RED_SEC.png").convert(),
+            "VERDE": pygame.image.load("assets/GREEN_SEC.png").convert(),
+            "AZUL": pygame.image.load("assets/BLUE_SEC.png").convert(),
+            "AMARILLO": pygame.image.load("assets/YELLOW_SEC.png").convert(),
+        }
+        # Cargar imágenes de vidas
+        corazon = pygame.image.load("assets/Heart.png").convert_alpha()
+        corazon_vacio = pygame.image.load("assets/Heart-1.png").convert_alpha()
+        self.corazon = pygame.transform.scale(corazon, (50, 50))
+        self.corazon_vacio = pygame.transform.scale(corazon_vacio, (50, 50))
 
-    # Configuración de colores
-    fondo_color = pygame.image.load("assets/BGSimonDicePlay.png").convert()  # Cambia aquí el color del fondo
+    def crear_botones(self):
+        # Definir rectángulos para los botones
+        self.botones = {
+            "ROJO": pygame.Rect(self.inicio_x, self.inicio_y, self.boton_tamaño, self.boton_tamaño),
+            "VERDE": pygame.Rect(self.inicio_x + self.boton_tamaño + self.espacio, self.inicio_y, self.boton_tamaño, self.boton_tamaño),
+            "AZUL": pygame.Rect(self.inicio_x, self.inicio_y + self.boton_tamaño + self.espacio, self.boton_tamaño, self.boton_tamaño),
+            "AMARILLO": pygame.Rect(self.inicio_x + self.boton_tamaño + self.espacio, self.inicio_y + self.boton_tamaño + self.espacio, self.boton_tamaño, self.boton_tamaño),
+        }
 
-    # Cargar imágenes
-    imagenes = {
-        "ROJO": pygame.image.load("assets/RED.png").convert(),
-        "VERDE": pygame.image.load("assets/GREEN.png").convert(),
-        "AZUL": pygame.image.load("assets/BLUE.png").convert(),
-        "AMARILLO": pygame.image.load("assets/YELLOW.png").convert(),
-    }
-    imagenes_highlight = {
-        "ROJO": pygame.image.load("assets/RED_SEC.png").convert(),
-        "VERDE": pygame.image.load("assets/GREEN_SEC.png").convert(),
-        "AZUL": pygame.image.load("assets/BLUE_SEC.png").convert(),
-        "AMARILLO": pygame.image.load("assets/YELLOW_SEC.png").convert(),
-    }
-
-
-    # Tamaño de los botones y posiciones
-    boton_tamaño = 200
-    espacio = 50
-    inicio_x = (size[0] - (2 * boton_tamaño + espacio)) // 2
-    inicio_y = (size[1] - (2 * boton_tamaño + espacio)) // 2
-
-    botones = {
-        "ROJO": pygame.Rect(inicio_x, inicio_y, boton_tamaño, boton_tamaño),
-        "VERDE": pygame.Rect(inicio_x + boton_tamaño + espacio, inicio_y, boton_tamaño, boton_tamaño),
-        "AZUL": pygame.Rect(inicio_x, inicio_y + boton_tamaño + espacio, boton_tamaño, boton_tamaño),
-        "AMARILLO": pygame.Rect(inicio_x + boton_tamaño + espacio, inicio_y + boton_tamaño + espacio, boton_tamaño, boton_tamaño),
-    }
-
-    secuencia = []
-    player_secuencia = []
-    inicio_juego = True  # Para manejar la pausa inicial
-    inicio_tiempo = pygame.time.get_ticks()  # Capturar tiempo inicial
-
-    def dibujar_botones(highlight=None):
-        screen.blit(fondo_color, (0,0))  # Cambiar el color del fondo aquí
-        for color, rect in botones.items():
-            if highlight == color:
-                screen.blit(imagenes_highlight[color], rect)
+    def dibujar_vidas(self):
+        # Dibujar las vidas restantes en la esquina superior
+        for i in range(self.max_vidas):
+            x = 50 + i * (self.corazon.get_width() + 10)
+            y = 20
+            if i < self.vidas:
+                self.screen.blit(self.corazon, (x, y))
             else:
-                screen.blit(imagenes[color], rect)
-        pygame.display.update([rect for rect in botones.values()])
+                self.screen.blit(self.corazon_vacio, (x, y))
+    
+    def dibujar_botones(self, highlight=None):
+        # Dibujar botones de colores
+        for color, rect in self.botones.items():
+            if highlight == color:
+                self.screen.blit(self.imagenes_highlight[color], rect)
+            else:
+                self.screen.blit(self.imagenes[color], rect)
+    
+    def dibujar_pantalla(self, highlight=None):
+        # Redibujar la pantalla completa
+        self.screen.fill((0, 0, 0))  # Fondo negro
+        self.dibujar_vidas()
+        self.dibujar_botones(highlight)
+        self.mostrar_texto(f"SCORE: {self.score}", (640, 40), tamaño=50)
         pygame.display.flip()
 
-    def play_secuencia(seq):
-        for color in seq:
-            dibujar_botones(color)
-            pygame.time.delay(500)
-            dibujar_botones()
-            pygame.time.delay(200)
-
-    def añadir_color_random(seq):
-        color = random.choice(list(botones.keys()))
-        seq.append(color)
-
-    def revisar_player_secuencia():
-        for i in range(len(player_secuencia)):
-            if player_secuencia[i] != secuencia[i]:
+    def mostrar_texto(self, texto, pos, tamaño=50, color=(255, 255, 255)):
+        # Mostrar texto en pantalla
+        font = pygame.font.Font(None, tamaño)
+        texto_render = font.render(texto, True, color)
+        rect = texto_render.get_rect(center=pos)
+        self.screen.blit(texto_render, rect)
+    
+    def generar_secuencia(self):
+        self.mostrar_texto("GENERANDO SECUENCIA...", (640, 400), tamaño=80)
+        pygame.display.flip()
+        pygame.time.delay(2000)
+        for color in self.secuencia:
+            self.dibujar_pantalla(color)
+            pygame.time.delay(700)
+            self.dibujar_pantalla()
+            pygame.time.delay(300)
+    
+    def comprobar_secuencia(self):
+        # Comparar secuencia del jugador con la generada
+        for i in range(len(self.player_secuencia)):
+            if self.player_secuencia[i] != self.secuencia[i]:
                 return False
         return True
 
-    añadir_color_random(secuencia)
-
-    while True:
+    def añadir_color_random(self):
+        # Añadir un color aleatorio a la secuencia
+        color = random.choice(list(self.botones.keys()))
+        self.secuencia.append(color)
+    
+    def manejar_eventos(self):
+        # Manejar eventos de entrada
+        mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                return
-            elif not inicio_juego and event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                for color, rect in botones.items():
-                    if rect.collidepoint(pos):
-                        player_secuencia.append(color)
-                        dibujar_botones(color)
+                return False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for color, rect in self.botones.items():
+                    if rect.collidepoint(mouse_pos):
+                        self.player_secuencia.append(color)
+                        self.dibujar_pantalla(color)
                         pygame.time.delay(300)
-                        dibujar_botones()
-
-                        if not revisar_player_secuencia():
-                            print("Secuencia incorrecta! Intenta de nuevo.")
-                            player_secuencia = []
+                        self.dibujar_pantalla()
+                        if not self.comprobar_secuencia():
+                            self.vidas -= 1
+                            if self.vidas <= 0:
+                                self.mostrar_texto("GAME OVER", (640, 400), tamaño=80, color=(255, 0, 0))
+                                pygame.display.flip()
+                                pygame.time.delay(3000)
+                                return False
+                            else:
+                                self.mostrar_texto("SECUENCIA INCORRECTA", (640, 400), tamaño=80, color=(255, 100, 100))
+                                pygame.display.flip()
+                                pygame.time.delay(2000)
+                                self.player_secuencia = []
+                                self.generar_secuencia()
+                        elif len(self.player_secuencia) == len(self.secuencia):
+                            self.score += 1
+                            self.mostrar_texto("¡CORRECTO!", (640, 400), tamaño=80, color=(100, 255, 100))
+                            pygame.display.flip()
                             pygame.time.delay(2000)
-                            play_secuencia(secuencia)
-                        elif len(player_secuencia) == len(secuencia):
-                            print("¡Secuencia correcta!")
-                            player_secuencia = []
-                            pygame.time.delay(2000)
-                            añadir_color_random(secuencia)
-                            play_secuencia(secuencia)
+                            self.player_secuencia = []
+                            self.añadir_color_random()
+                            self.generar_secuencia()
+        return True
 
-        if inicio_juego:
-            tiempo_actual = pygame.time.get_ticks()
-            if tiempo_actual - inicio_tiempo > 2000:
-                inicio_juego = False
-                play_secuencia(secuencia)
-        
-        dibujar_botones()
-        clock.tick(60)  # Limitar FPS a 60
+    def iniciar_juego(self):
+        # Lógica principal del juego
+        self.añadir_color_random()
+        while True:
+            if not self.manejar_eventos():
+                break
+            if self.inicio_juego:
+                tiempo_actual = pygame.time.get_ticks()
+                if tiempo_actual - self.inicio_tiempo > 2000:
+                    self.inicio_juego = False
+                    self.generar_secuencia()
+            self.dibujar_pantalla()
+            self.clock.tick(60)
 
-main()
+if __name__ == "__main__":
+    juego = SimonDiceGame()
+    juego.iniciar_juego()
+
 
 
 
