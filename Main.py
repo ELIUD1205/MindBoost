@@ -682,6 +682,7 @@ def menu_reaction_game():
 def menu_simon_dice():
     pygame.display.set_caption("Simon Dice")
     loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
+    Scores_file = "Top_scores_simon_dice.json"
 
     def simon_dice():
         loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
@@ -696,8 +697,24 @@ def menu_simon_dice():
             if loading_bar.draw():  # Si la barra de carga está llena
                 break  # Detener el bucle principal cuando la barra esté llena
 
-        # Esperar un poco para que el evento de carga se vea
-        pygame.time.wait(100)
+            #Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+
+        def save_score(new_score, player_name):
+            try:
+                with open(Scores_file, "r") as file:
+                    scores = json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                scores = [{"name": "---", "score": 0} for _ in range(5)]
+            
+            # Añadir el nuevo puntaje
+            scores.append({"name": player_name, "score": new_score})
+            # Ordenar por puntaje descendente y mantener solo los 5 mejores
+            scores = sorted(scores, key=lambda x: x["score"], reverse=True)[:5]
+
+            # Guardar los puntajes actualizados
+            with open(Scores_file, "w") as file:
+                json.dump(scores, file)
 
         size = (1280, 800)
         pygame.display.set_caption("Simón Dice")
@@ -873,7 +890,6 @@ def menu_simon_dice():
 
         while True:
             simon_dice_mouse_pos = pygame.mouse.get_pos()
-            current_time = pygame.time.get_ticks()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -882,6 +898,7 @@ def menu_simon_dice():
 
                 if estado == ESTADO_JUGANDO and event.type == pygame.MOUSEBUTTONDOWN:
                     if SimonDice_exit.checkForInput(simon_dice_mouse_pos):
+                        save_score(score, player_name)
                         menu_simon_dice()
                     for color, rect in botones.items():
                         if rect.collidepoint(simon_dice_mouse_pos):
@@ -935,10 +952,11 @@ def menu_simon_dice():
                                     while pygame.time.get_ticks() - tiempo_evento < 3000:
                                         for sub_event in pygame.event.get():
                                             if sub_event.type == pygame.QUIT:
-                                                menu_simon_dice()
+                                                pygame.quit()
                                                 return
                                         clock.tick(60)
-                                    pygame.quit()
+                                    save_score(score, player_name)
+                                    menu_simon_dice()
                                     return
                             
                                 play_secuencia(secuencia)
@@ -984,7 +1002,7 @@ def menu_simon_dice():
         while True:
             Tutorial_reaction_game_mouse_pos = pygame.mouse.get_pos()
             screen.blit(BGSimonDice, (0,0))
-            contorno("TUTORIAL", get_font(100), "#f0f6f0", "black", 640, 60)
+            contorno("TUTORIAL", get_font(60), "#f0f6f0", "black", 640, 45)
 
             contorno1("En Simón Dice, se genera una secuencia de", get_font(40), "#f0f6f0", "black", 640, 140)
             contorno1("colores que debes memorizar y repetir en el", get_font(40), "#f0f6f0", "black", 640, 190)
@@ -1014,6 +1032,76 @@ def menu_simon_dice():
                         tutorialreactiongame()
                     if Back_tutorial_reaction_game_button.checkForInput(Tutorial_reaction_game_mouse_pos):
                         menu_simon_dice()
+            pygame.display.update()
+
+    def scores_simon_dice():
+        pygame.display.set_caption("Scores Simón Dice")
+        loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+        
+        # Función para cargar los puntajes
+        def load_scores():
+            try:
+                with open("Top_scores_simon_dice.json", "r") as file:
+                    return json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                # Si no hay archivo o está corrupto, usar una lista predeterminada
+                return [{"name": "---", "score": 0} for _ in range(5)]
+
+        # Cargar los puntajes
+        top_scores = load_scores()
+
+        while True:
+            Score_reaction_game_mouse_pos = pygame.mouse.get_pos()
+            screen.blit(BGSimonDice, (0,0))
+            #screen.fill("#222323")
+
+            # Título de la pantalla de puntajes
+            contorno("TOP SCORES", get_font(100), "#f0f6f0", "black", 640, 100)
+            contorno("RANK", get_font(80), "#b45252", "black", 380, 220)
+            contorno("NAME", get_font(80), "#4b80ca", "black", 640, 220)
+            contorno("SCORE", get_font(80), "#8ab060", "black", 900, 220)
+
+            # Dibujar la lista de puntajes
+            for i, entry in enumerate(top_scores):
+                rank_text = f"{i + 1}st" if i == 0 else f"{i + 1}nd" if i == 1 else f"{i + 1}rd" if i == 2 else f"{i + 1}th"
+                rank_text = get_font(50).render(rank_text, True, "black")
+                rank_text_rect = rank_text.get_rect(center=(380, 300 + i * 60))
+                screen.blit(rank_text, rank_text_rect)
+                name_text = get_font(50).render(entry["name"], True, "black")
+                name_text_rect = name_text.get_rect(center=(640, 300 + i * 60))
+                screen.blit(name_text, name_text_rect)
+                score_text = get_font(50).render(str(entry["score"]), True, "black")
+                score_text_rect = score_text.get_rect(center=(900, 300 + i * 60))
+                screen.blit(score_text, score_text_rect)
+
+            # Botón para volver
+            Back_to_menu_button = Button(SimonDiceButtonYellow, pos=(640, 630), 
+                                         text_input="BACK", font=get_font(65), base_color="black", hovering_color="White")
+
+            Back_to_menu_button.changeColor(Score_reaction_game_mouse_pos)
+            Back_to_menu_button.update(screen)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if Back_to_menu_button.checkForInput(Score_reaction_game_mouse_pos):
+                        menu_simon_dice()
+
             pygame.display.update()
 
     while True:
@@ -1063,7 +1151,7 @@ def menu_simon_dice():
                 if Tutorial_simon_dice_button.checkForInput(simon_dice_mouse_pos):
                     tutorial_simon_dice()
                 if Score_simon_dice_button.checkForInput(simon_dice_mouse_pos):
-                    score_reaction_game()
+                    scores_simon_dice()
 
         pygame.display.update()
 
