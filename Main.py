@@ -1,4 +1,4 @@
-import pygame, sys, random, json, time
+import pygame, sys, random, json, time, os
 #Importar la clase Button del codigo button
 from utils.button import Button
 #Importar la clase Spray del codigo spray
@@ -15,11 +15,25 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Menú")
 
+player_name = ""
+
 #Main Menu
 FondoAzul = pygame.image.load("assets/FondoAzul.png")
 FondoMain = pygame.image.load("assets/FondoMainMenu.png")
 BGPuzzleNumerico = pygame.image.load("assets/BGPuzzleNumerico.png")
 BGMapache = pygame.image.load("assets/BGMapache.png")
+BotonVolumen = pygame.image.load("assets/BotonVolumen.png")
+BotonVolumenS = pygame.image.load("assets/BotonVolumenSpray.png")
+Musica_Menu = pygame.mixer.Sound("assets/Digital-Serenity-ext-v2.1.wav")
+Musica_Menu.set_volume(0.2)
+
+#Volumen
+SubirVolumen = pygame.image.load("assets/SubirVolumen.png")
+SubirVolumenS = pygame.image.load("assets/SubirVolumenS.png")
+BajarVolumen = pygame.image.load("assets/BajarVolumen.png")
+BajarVolumenS = pygame.image.load("assets/BajarVolumenS.png")
+VolumenSimbol = pygame.image.load("assets/VolumenSimbol.png")
+VolumenMute = pygame.image.load("assets/VolumenMute.png")
 
 #Logo
 Biomind = pygame.image.load("assets/BIOMIND.png")
@@ -57,6 +71,43 @@ Burbuja = pygame.image.load("assets/Burbuja.png")
 POP = pygame.image.load("assets/POP.png")
 Sonido_POP = pygame.mixer.Sound("assets/POP.mp3")
 Sonido_Burbujas = pygame.mixer.Sound("assets/BurbujasLoading.mp3")
+Musica_reaction_game = pygame.mixer.Sound("assets/Depths-of-Discovery-ext-v2.1.wav")
+Musica_reaction_game.set_volume(0.2)
+
+# Configuración de la playlist
+CARPETA_MUSICA = "musica"  # Carpeta donde se almacenan las canciones
+VOLUMEN_INICIAL = 0.5      # Volumen inicial (0.0 a 1.0)
+# Cargar canciones automáticamente desde la carpeta
+playlist = [
+    os.path.join(CARPETA_MUSICA, archivo) 
+    for archivo in os.listdir(CARPETA_MUSICA) 
+    if archivo.endswith((".ogg", ".wav", ".mp3"))
+]
+if not playlist:
+    print("No se encontraron canciones en la carpeta especificada.")
+    pygame.quit()
+    sys.exit()
+# Mezclar la playlist aleatoriamente
+random.shuffle(playlist)
+
+# Función para reproducir la playlist
+def reproducir_playlist(playlist, volumen=VOLUMEN_INICIAL):
+    pygame.mixer.music.set_volume(volumen)
+    if playlist:  # Si hay canciones en la playlist
+        pygame.mixer.music.load(playlist[0])  # Cargar la primera canción
+        pygame.mixer.music.play()
+        print(f"Reproduciendo: {os.path.basename(playlist[0])}")
+        # Configurar evento para cuando la canción termine
+        pygame.mixer.music.set_endevent(pygame.USEREVENT)
+
+# Función para avanzar en la playlist
+def avanzar_playlist(playlist):
+    if playlist:  # Si hay canciones en la lista
+        playlist.append(playlist.pop(0))  # Mover la primera canción al final
+        reproducir_playlist(playlist)
+
+# Comenzar la playlist
+reproducir_playlist(playlist)
 
 #Define la función para dar tipografia a los textos
 def get_font(size):
@@ -114,6 +165,8 @@ def games():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         # Dibujar la barra de carga
         if loading_bar.draw():  # Si la barra de carga está llena
@@ -169,6 +222,8 @@ def games():
                     menu_puzzle_numerico()
                 if Colores_Y_Figuras_B.checkForInput(Games_mouse_pos):
                     menu_colores_y_figuras()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         pygame.display.update()
 
@@ -181,6 +236,8 @@ def about():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         # Dibujar la barra de carga
         if loading_bar.draw():  # Si la barra de carga está llena
@@ -222,7 +279,74 @@ def about():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if About_back.checkForInput(Play_mouse_pos):
                     main_menu()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
+        pygame.display.update()
+
+def volumen():
+    pygame.display.set_caption("Ajustar Volumen")
+
+    # Configurar un valor inicial del volumen
+    current_volume = pygame.mixer.music.get_volume()
+
+    while True:
+        # Capturar posición del mouse
+        Volumen_mouse_pos = pygame.mouse.get_pos()
+
+        # Dibujar fondo y elementos en la pantalla
+        screen.blit(FondoMain, [0, 0])
+
+        contorno("MUSIC VOLUME", get_font(100), "#d08159", "black", 640, 100)
+        contorno1(f"MUSIC VOLUME: {current_volume * 100:.0f}%", get_font(60), "#ffecd6", "black", 460, 200)
+
+        #Botones para subir volumen
+        Subir_Volumen_Musica = Button(SubirVolumen, pos=(860, 195), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_Musica.update(screen)
+
+        Bajar_Volumen_Musica = Button(BajarVolumen, pos=(960, 195), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_Musica.update(screen)
+
+        Volumen_Mute_Musica = Button(VolumenMute, pos=(1060, 195), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_Musica.update(screen)
+
+        #Botón de regreso al menú principal
+        About_back = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
+                            text_input="BACK", font=get_font(75), base_color="#000000", hovering_color="White")
+
+        #Actualizar color y estado del botón
+        About_back.changeColor(Volumen_mouse_pos)
+        About_back.update(screen)
+
+        if current_volume == 0:
+            Volumen_Mute_Musica.update(screen)
+
+        #Manejo de eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  #Salir del juego
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:  #Volver al menú principal
+                if About_back.checkForInput(Volumen_mouse_pos):
+                    main_menu()
+                if Subir_Volumen_Musica.checkForInput(Volumen_mouse_pos):
+                    current_volume = min(current_volume + 0.05, 1.0)  # Limitar a 1.0 (100%)
+                    pygame.mixer.music.set_volume(current_volume)
+                    print(f"Volumen: {current_volume * 100:.0f}%")
+                if Bajar_Volumen_Musica.checkForInput(Volumen_mouse_pos):
+                    current_volume = max(current_volume - 0.05, 0.0)  #Limitar a 0.0 (0%)
+                    pygame.mixer.music.set_volume(current_volume)
+                    print(f"Volumen: {current_volume * 100:.0f}%")
+                if Volumen_Mute_Musica.checkForInput(Volumen_mouse_pos):
+                    current_volume = max(current_volume - current_volume, 0.0)
+                    pygame.mixer.music.set_volume(current_volume)
+            if event.type == pygame.USEREVENT:  #Avanzar la playlist automáticamente
+                avanzar_playlist(playlist)
+
+        #Actualizar la pantalla
         pygame.display.update()
 
 def menu_reaction_game():
@@ -669,6 +793,7 @@ def menu_reaction_game():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if Play_reaction_game_button.checkForInput(Menu_reaction_game_mouse_pos):
+                    Musica_Menu.stop()
                     reaction_games()
                 if Back_reaction_game_button.checkForInput(Menu_reaction_game_mouse_pos):
                     games()
@@ -1226,34 +1351,39 @@ def main_menu():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         # Dibujar la barra de carga
         if loading_bar.draw():  # Si la barra de carga está llena
             break  # Detener el bucle principal cuando la barra esté llena
 
-        # Esperar un poco para que el evento de carga se vea
         pygame.time.wait(100)
-    
+
     while True:
         screen.blit(FondoMain, [0, 0])
         screen.blit(Biomind, (1200, 640))
-        Brain_rect = Brain.get_rect(center=(640,70))
+        Brain_rect = Brain.get_rect(center=(640, 70))
         screen.blit(Brain, Brain_rect)
-        
+
         Menu_mouse_pos = pygame.mouse.get_pos()
-        
+
         contorno("MINDBOOST", get_font(100), "#d08159", "black", 640, 170)
 
         Games_button = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 300), 
                             text_input="GAMES", font=get_font(75), base_color="#000000", hovering_color="White")
         About_button = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 450), 
                             text_input="ABOUT", font=get_font(75), base_color="#000000", hovering_color="White")
-        Quit_button = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
-                            text_input="QUIT", font=get_font(75), base_color="#000000", hovering_color="White")
+        Back_button = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
+                            text_input="BACK", font=get_font(75), base_color="#000000", hovering_color="White")
 
-        for button in [Games_button, Quit_button, About_button]:
+        for button in [Games_button, Back_button, About_button]:
             button.changeColor(Menu_mouse_pos)
             button.update(screen)
+
+        Volumen_boton = Spray(base_image=BotonVolumen, hover_image=BotonVolumenS, pos=(80, 640))
+        Volumen_boton.changeImage(Menu_mouse_pos)
+        Volumen_boton.update(screen)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1264,24 +1394,27 @@ def main_menu():
                         games()
                 if About_button.checkForInput(Menu_mouse_pos):
                     about()
-                if Quit_button.checkForInput(Menu_mouse_pos):
-                    pygame.quit()
-                    sys.exit()
+                if Back_button.checkForInput(Menu_mouse_pos):
+                    get_player_name()
+                if Volumen_boton.checkForInput(Menu_mouse_pos):
+                    volumen()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         pygame.display.update()
 
 def get_player_name():
+    global player_name  # Declarar que se va a modificar la variable global
     pygame.display.set_caption("Menú")
-
-    name = ""
+    name = player_name  # Usar el valor actual como base para modificar
 
     while True:
-        screen.blit(FondoMain, (0,0))
+        screen.blit(FondoMain, (0, 0))
         screen.blit(Biomind, (1200, 640))
-        Brain_rect = Brain.get_rect(center=(640,70))
+        Brain_rect = Brain.get_rect(center=(640, 70))
         screen.blit(Brain, Brain_rect)
         get_player_name_mouse_pos = pygame.mouse.get_pos()
-        
+
         contorno("MINDBOOST", get_font(100), "#d08159", "black", 640, 170)
         Enter_your_name = get_font(60).render("ENTER YOUR NICKNAME:", True, "#ffecd6")
         Enter_your_name_rect = Enter_your_name.get_rect(center=(640, 300))
@@ -1337,12 +1470,15 @@ def get_player_name():
                     sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and len(name) == 3:
-                    return name
+                    player_name = name  # Actualizar la variable global
+                    print(f"Player name: {player_name}")
+                    main_menu()
                 if event.key == pygame.K_BACKSPACE:
                     name = name[:-1]  # Eliminar el último carácter
                 if len(name) < 3 and event.unicode.isalnum():
                     name += event.unicode.upper()  # Agregar la letra en mayúsculas
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
-player_name = get_player_name()
-print(f"Player name: {player_name}")
-main_menu()
+# Comenzar con el flujo
+get_player_name()
