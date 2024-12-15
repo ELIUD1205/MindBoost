@@ -20,7 +20,6 @@ player_name = ""
 #Main Menu
 FondoAzul = pygame.image.load("assets/FondoAzul.png")
 FondoMain = pygame.image.load("assets/FondoMainMenu.png")
-BGPuzzleNumerico = pygame.image.load("assets/BGPuzzleNumerico.png")
 BGMapache = pygame.image.load("assets/BGMapache.png")
 BotonVolumen = pygame.image.load("assets/BotonVolumen.png")
 BotonVolumenS = pygame.image.load("assets/BotonVolumenSpray.png")
@@ -55,10 +54,19 @@ jugando = False
 #Puzzle Numerico
 PuzzlenumericoSpray = pygame.image.load("assets/PuzzleNumericoSpray.png")
 PuzzlenumericoSprayS = pygame.image.load("assets/PuzzleNumericoSprayS.png")
+BGMenuPuzzleNumerico = pygame.image.load("assets/BGMenuPuzzleNumerico.png")
+BGPuzzleNumerico = pygame.image.load("assets/BGPuzzleNumerico.png")
+ButtonSTM = pygame.image.load("assets/ButtonSTM.png")
+BGLoadingSTM = pygame.image.load("assets/BGLoadingSTM.png")
+BGWinSTM = pygame.image.load("assets/BGWinPuzzleNumerico.png")
+BGTutorialSTM = pygame.image.load("assets/BGTutorialSTM.png")
+BackSTM = pygame.image.load("assets/Flecha_Back.png")
+BGScoresSTM = pygame.image.load("assets/BGScoresSTM.png")
 
 #Colores Y Figuras
 ColoresyfigurasSpray = pygame.image.load("assets/ColoresYFigurasSpray.png")
 ColoresyfigurasSprayS = pygame.image.load("assets/ColoresYFigurasSprayS.png")
+BGMenuCYF = pygame.image.load("assets/BGMenuFYC.png")
 
 #Reaction Game
 JuegodereaccionSpray = pygame.image.load("assets/JuegoDeReaccionSpray.png")
@@ -71,12 +79,49 @@ Burbuja = pygame.image.load("assets/Burbuja.png")
 POP = pygame.image.load("assets/POP.png")
 Sonido_POP = pygame.mixer.Sound("assets/POP.mp3")
 Sonido_Burbujas = pygame.mixer.Sound("assets/BurbujasLoading.mp3")
-Musica_reaction_game = pygame.mixer.Sound("assets/Depths-of-Discovery-ext-v2.1.wav")
-Musica_reaction_game.set_volume(0.2)
+
+#Efectos de sonido
+sounds_loadingbars = [
+    pygame.mixer.Sound("assets/Loading.wav"),
+    pygame.mixer.Sound("assets/BurbujasLoading.wav")
+]
+
+# Diccionario para almacenar volúmenes actuales
+volumen_actual = {
+    "loadingbars": 0.5,
+}
+mute_estado = {
+    "loadingbars": False,  
+}
+
+# Ajustar volúmenes iniciales
+for sonido in sounds_loadingbars:
+    sonido.set_volume(volumen_actual["loadingbars"])
+
+# Función para ajustar el volumen de una lista y actualizar su almacenamiento
+def ajustar_volumen(lista_sonidos, clave, incremento):
+    if not mute_estado[clave]:  # Solo ajustar volumen si no está muteado
+        nuevo_volumen = min(1.0, max(0.0, volumen_actual[clave] + incremento))
+        volumen_actual[clave] = nuevo_volumen
+        for sonido in lista_sonidos:
+            sonido.set_volume(nuevo_volumen)
+
+# Función para alternar mute/unmute
+def toggle_mute(lista_sonidos, clave):
+    if mute_estado[clave]:  # Si está en mute, restaurar el volumen
+        for sonido in lista_sonidos:
+            sonido.set_volume(volumen_actual[clave])
+        print(f"{clave.capitalize()} desmuteados. Volumen: {volumen_actual[clave]*100:.0f}%")
+    else:  # Si no está en mute, silenciar
+        for sonido in lista_sonidos:
+            sonido.set_volume(0.0)
+        print(f"{clave.capitalize()} muteados.")
+    mute_estado[clave] = not mute_estado[clave]
 
 # Configuración de la playlist
 CARPETA_MUSICA = "musica"  # Carpeta donde se almacenan las canciones
 VOLUMEN_INICIAL = 0.5      # Volumen inicial (0.0 a 1.0)
+mute_music = False
 # Cargar canciones automáticamente desde la carpeta
 playlist = [
     os.path.join(CARPETA_MUSICA, archivo) 
@@ -160,6 +205,7 @@ def games():
     pygame.display.set_caption("Games")
     loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
 
+    sounds_loadingbars[0].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -231,6 +277,7 @@ def about():
     pygame.display.set_caption("About")
     loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
 
+    sounds_loadingbars[0].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -286,6 +333,24 @@ def about():
 
 def volumen():
     pygame.display.set_caption("Ajustar Volumen")
+    loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
+
+    sounds_loadingbars[0].play(loops=0)
+    while True:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
 
     # Configurar un valor inicial del volumen
     current_volume = pygame.mixer.music.get_volume()
@@ -297,10 +362,11 @@ def volumen():
         # Dibujar fondo y elementos en la pantalla
         screen.blit(FondoMain, [0, 0])
 
-        contorno("MUSIC VOLUME", get_font(100), "#d08159", "black", 640, 100)
-        contorno1(f"MUSIC VOLUME: {current_volume * 100:.0f}%", get_font(60), "#ffecd6", "black", 460, 200)
+        contorno("VOLUME", get_font(100), "#d08159", "black", 640, 100)
+        contorno1(f"MUSIC VOLUME: {current_volume * 100:.0f}%", get_font(60), "#ffecd6", "black", 450, 200)
+        contorno1(f"LOADING VOLUME: {volumen_actual['loadingbars']*100:.0f}%", get_font(60), "#ffecd6", "black", 410, 280)
 
-        #Botones para subir volumen
+        #Botones para volumen musica
         Subir_Volumen_Musica = Button(SubirVolumen, pos=(860, 195), 
                             text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
         Subir_Volumen_Musica.update(screen)
@@ -312,6 +378,19 @@ def volumen():
         Volumen_Mute_Musica = Button(VolumenMute, pos=(1060, 195), 
                             text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
         Volumen_Mute_Musica.update(screen)
+
+        #Botones para volumen loadingbars
+        Subir_Volumen_loadingbars = Button(SubirVolumen, pos=(860, 275), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_loadingbars.update(screen)
+
+        Bajar_Volumen_loadingbars = Button(BajarVolumen, pos=(960, 275), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_loadingbars.update(screen)
+
+        Volumen_Mute_loadingbars = Button(VolumenMute, pos=(1060, 275), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_loadingbars.update(screen)
 
         #Botón de regreso al menú principal
         About_back = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
@@ -332,6 +411,7 @@ def volumen():
             if event.type == pygame.MOUSEBUTTONDOWN:  #Volver al menú principal
                 if About_back.checkForInput(Volumen_mouse_pos):
                     main_menu()
+                #Musica
                 if Subir_Volumen_Musica.checkForInput(Volumen_mouse_pos):
                     current_volume = min(current_volume + 0.05, 1.0)  # Limitar a 1.0 (100%)
                     pygame.mixer.music.set_volume(current_volume)
@@ -341,8 +421,32 @@ def volumen():
                     pygame.mixer.music.set_volume(current_volume)
                     print(f"Volumen: {current_volume * 100:.0f}%")
                 if Volumen_Mute_Musica.checkForInput(Volumen_mouse_pos):
-                    current_volume = max(current_volume - current_volume, 0.0)
-                    pygame.mixer.music.set_volume(current_volume)
+                    global mute_music
+                    if not mute_music:
+                        pygame.mixer.music.set_volume(0.0)  # Mute música
+                        print("Música muteada")
+                    else:
+                        pygame.mixer.music.set_volume(VOLUMEN_INICIAL)  # Restaurar volumen
+                        print(f"Música desmuteada. Volumen: {VOLUMEN_INICIAL * 100:.0f}%")
+                    mute_music = not mute_music  # Alternar estado de mute
+                #Loadingbars
+                if Subir_Volumen_loadingbars.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_loadingbars, "loadingbars", 0.05)
+                    print(f"Volumen loadingbars: {volumen_actual['loadingbars']*100:.0f}%")
+                if Bajar_Volumen_loadingbars.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_loadingbars, "loadingbars", -0.05)
+                    print(f"Volumen loadingbars: {volumen_actual['loadingbars']*100:.0f}%")
+                if Volumen_Mute_loadingbars.checkForInput(Volumen_mouse_pos):
+                    toggle_mute(sounds_loadingbars, "loadingbars")
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    # Subir volumen
+                    ajustar_volumen(sounds_loadingbars, "loadingbars", 0.05)
+                    print(f"Volumen loadingbars: {volumen_actual['loadingbars']*100:.0f}%")
+                elif event.key == pygame.K_DOWN:
+                    # Bajar volumen
+                    ajustar_volumen(sounds_loadingbars, "loadingbars", -0.05)
+                    print(f"Volumen loadingbars: {volumen_actual['loadingbars']*100:.0f}%")
             if event.type == pygame.USEREVENT:  #Avanzar la playlist automáticamente
                 avanzar_playlist(playlist)
 
@@ -354,11 +458,13 @@ def menu_reaction_game():
     loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
     while True:
-        Sonido_Burbujas.play()
+        sounds_loadingbars[1].play()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         # Dibujar la barra de carga
         if loading_bar.draw():  # Si la barra de carga está llena
@@ -374,11 +480,13 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
-            Sonido_Burbujas.play()
+            sounds_loadingbars[1].play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -406,6 +514,7 @@ def menu_reaction_game():
         mostrar_reemplazo = False
         tiempo_reemplazo = 250  # Tiempo en ms para mostrar la imagen de reemplazo
         tiempo_cambio = None  # Guardar el tiempo en que se cambió la imagen
+        burbuja_clickeada = False
 
         # Reloj de Pygame para controlar FPS
         clock = pygame.time.Clock()
@@ -488,28 +597,35 @@ def menu_reaction_game():
                 imagen_escalada = pygame.transform.scale(Burbuja, (2 * radio_actual, 2 * radio_actual))
                 screen.blit(imagen_escalada, imagen_escalada.get_rect(center=pos_circulo))
 
+                # Restablecer estado de la burbuja para permitir nuevos clics
+                burbuja_clickeada = False
+
                 # Mostrar puntaje
                 texto_puntaje_ReactionGame = get_font(40).render(f"SCORE: {puntaje}", True, "black")
                 texto_puntaje_ReactionGame_rect = texto_puntaje_ReactionGame.get_rect(center=(640,50))
                 screen.blit(texto_puntaje_ReactionGame, texto_puntaje_ReactionGame_rect)
 
             for event in pygame.event.get():
-            
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    x, y = pygame.mouse.get_pos()
-                    dist = ((x - pos_circulo[0]) ** 2 + (y - pos_circulo[1]) ** 2) ** 0.5
-                    if dist <= radio_actual_burbuja:
-                        # Acierto, aumentar puntaje y reducir tiempo de vida
-                        puntaje += 1
-                        tiempo_vida = max(500, tiempo_vida - 50)
+                    if not burbuja_clickeada:  # Solo procesar si la burbuja no fue clickeada
+                        x, y = pygame.mouse.get_pos()
+                        dist = ((x - pos_circulo[0]) ** 2 + (y - pos_circulo[1]) ** 2) ** 0.5
+                        if dist <= radio_actual_burbuja:
+                            # Acierto, aumentar puntaje y reducir tiempo de vida
+                            puntaje += 1
+                            tiempo_vida = max(500, tiempo_vida - 50)
                 
-                        # Cambiar temporalmente a la imagen de reemplazo
-                        mostrar_reemplazo = True
-                        Sonido_POP.play()
-                        tiempo_cambio = pygame.time.get_ticks()
+                            # Cambiar temporalmente a la imagen de reemplazo
+                            mostrar_reemplazo = True
+                            Sonido_POP.play()
+                            tiempo_cambio = pygame.time.get_ticks()
+
+                            # Marcar la burbuja como clickeada
+                            burbuja_clickeada = True
+
                     if ReactionGame_exit.checkForInput(reaction_games_mouse_pos):
                         save_score(puntaje, player_name)
                         menu_reaction_game()
@@ -517,6 +633,8 @@ def menu_reaction_game():
                     if event.key == pygame.K_r:
                         save_score(puntaje, player_name)
                         reaction_games()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             pygame.display.flip()
             clock.tick(60)  # Mantener 60 FPS
@@ -526,11 +644,13 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
-            Sonido_Burbujas.play()
+            sounds_loadingbars[1].play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -544,11 +664,13 @@ def menu_reaction_game():
             loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
             while True:
-                Sonido_Burbujas.play()
+                sounds_loadingbars[1].play()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                         pygame.quit()
                         sys.exit()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
 
                 # Dibujar la barra de carga
                 if loading_bar.draw():  # Si la barra de carga está llena
@@ -576,6 +698,7 @@ def menu_reaction_game():
             mostrar_reemplazo = False
             tiempo_reemplazo = 250  # Tiempo en ms para mostrar la imagen de reemplazo
             tiempo_cambio = None  # Guardar el tiempo en que se cambió la imagen
+            burbuja_clickeada = False
 
             # Reloj de Pygame para controlar FPS
             clock = pygame.time.Clock()
@@ -636,30 +759,38 @@ def menu_reaction_game():
                     imagen_escalada = pygame.transform.scale(Burbuja, (2 * radio_actual, 2 * radio_actual))
                     screen.blit(imagen_escalada, imagen_escalada.get_rect(center=pos_circulo))
 
+                    # Restablecer estado de la burbuja para permitir nuevos clics
+                    burbuja_clickeada = False
+
                     # Mostrar puntaje
                     texto_puntaje_ReactionGame = get_font(40).render(f"SCORE: {puntaje}", True, "black")
                     texto_puntaje_ReactionGame_rect = texto_puntaje_ReactionGame.get_rect(center=(640,50))
                     screen.blit(texto_puntaje_ReactionGame, texto_puntaje_ReactionGame_rect)
 
                 for event in pygame.event.get():
-            
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit()
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        x, y = pygame.mouse.get_pos()
-                        dist = ((x - pos_circulo[0]) ** 2 + (y - pos_circulo[1]) ** 2) ** 0.5
-                        if dist <= radio_actual_burbuja:
-                            # Acierto, aumentar puntaje y reducir tiempo de vida
-                            puntaje += 1
-                            tiempo_vida = max(500, tiempo_vida - 20)
+                        if not burbuja_clickeada:  # Solo procesar si la burbuja no fue clickeada
+                            x, y = pygame.mouse.get_pos()
+                            dist = ((x - pos_circulo[0]) ** 2 + (y - pos_circulo[1]) ** 2) ** 0.5
+                            if dist <= radio_actual_burbuja:
+                                # Acierto, aumentar puntaje y reducir tiempo de vida
+                                puntaje += 1
+                                tiempo_vida = max(500, tiempo_vida - 20)
                 
-                            # Cambiar temporalmente a la imagen de reemplazo
-                            mostrar_reemplazo = True
-                            Sonido_POP.play()
-                            tiempo_cambio = pygame.time.get_ticks()
+                                # Cambiar temporalmente a la imagen de reemplazo
+                                mostrar_reemplazo = True
+                                Sonido_POP.play()
+                                tiempo_cambio = pygame.time.get_ticks()
+
+                                # Marcar la burbuja como clickeada
+                                burbuja_clickeada = True
                         if ReactionGame_exit.checkForInput(reaction_games_mouse_pos):
                             tutorial_reaction_game()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
 
                 pygame.display.flip()
                 clock.tick(60)  # Mantener 60 FPS
@@ -695,6 +826,8 @@ def menu_reaction_game():
                         tutorialreactiongame()
                     if Back_tutorial_reaction_game_button.checkForInput(Tutorial_reaction_game_mouse_pos):
                         menu_reaction_game()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
             pygame.display.update()
     
     def score_reaction_game():
@@ -702,11 +835,13 @@ def menu_reaction_game():
         loading_bar = LoadingBar(screen, BGLoadingReactionGame, start_color=(255, 255, 255), end_color=(250, 140, 180), text_color="#2e67a5", loading_time=1.5, segments=10)
 
         while True:
-            Sonido_Burbujas.play()
+            sounds_loadingbars[1].play()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -764,6 +899,8 @@ def menu_reaction_game():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if Back_to_menu_button.checkForInput(Score_reaction_game_mouse_pos):
                         menu_reaction_game()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             pygame.display.update()
 
@@ -801,6 +938,8 @@ def menu_reaction_game():
                     tutorial_reaction_game()
                 if Score_reaction_game_button.checkForInput(Menu_reaction_game_mouse_pos):
                     score_reaction_game()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         pygame.display.update()
 
@@ -817,6 +956,8 @@ def menu_simon_dice():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -1020,6 +1161,8 @@ def menu_simon_dice():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
                 if estado == ESTADO_JUGANDO and event.type == pygame.MOUSEBUTTONDOWN:
                     if SimonDice_exit.checkForInput(simon_dice_mouse_pos):
@@ -1116,6 +1259,8 @@ def menu_simon_dice():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -1157,6 +1302,8 @@ def menu_simon_dice():
                         tutorialreactiongame()
                     if Back_tutorial_reaction_game_button.checkForInput(Tutorial_reaction_game_mouse_pos):
                         menu_simon_dice()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
             pygame.display.update()
 
     def scores_simon_dice():
@@ -1168,6 +1315,8 @@ def menu_simon_dice():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             # Dibujar la barra de carga
             if loading_bar.draw():  # Si la barra de carga está llena
@@ -1226,6 +1375,8 @@ def menu_simon_dice():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if Back_to_menu_button.checkForInput(Score_reaction_game_mouse_pos):
                         menu_simon_dice()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
             pygame.display.update()
 
@@ -1234,6 +1385,8 @@ def menu_simon_dice():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         # Dibujar la barra de carga
         if loading_bar.draw():  # Si la barra de carga está llena
@@ -1277,37 +1430,567 @@ def menu_simon_dice():
                     tutorial_simon_dice()
                 if Score_simon_dice_button.checkForInput(simon_dice_mouse_pos):
                     scores_simon_dice()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         pygame.display.update()
 
 def menu_puzzle_numerico():
-    pygame.display.set_caption("Puzzle Numerico")
+    pygame.display.set_caption("Menú Steal The Money")
+    loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
 
     while True:
-        screen.blit(BGPuzzleNumerico, (0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
-        simon_dice_mouse_pos = pygame.mouse.get_pos()
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
 
-        Biomind_titeld = get_font(30).render("Aqui iria el juego...", True, "Red")
-        Biomind_titeld_rect = Biomind_titeld.get_rect(center=(640,200))
-        screen.blit(Biomind_titeld, Biomind_titeld_rect)
-        About_P1 = get_font(30).render("Si tuviera uno", True, "black")
-        About_P1_rect = About_P1.get_rect(center=(640,280))
-        screen.blit(About_P1, About_P1_rect)
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
+    
+    def Steal_the_money():
+        # Dimensiones de la pantalla
+        SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+        BOARD_SIZE = 400
+        TILE_SIZE = BOARD_SIZE // 3
+        BUTTON_HEIGHT = 50
 
-        simon_dice_exit = Button(image=None, pos=(640, 620), 
-                            text_input="EXIT", font=get_font(60), base_color="Red", hovering_color="White")
+        SCORES_FILE = "top_scores_STM.json"
 
-        simon_dice_exit.changeColor(simon_dice_mouse_pos)
-        simon_dice_exit.update(screen)
+        # Inicializar pantalla
+        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Steal The Money")
+        loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
+
+        # Variables del cronómetro
+        start_time = time.time()
+        def format_time(elapsed):
+            mins, secs = divmod(elapsed, 60)
+            return f"{int(mins):02}:{int(secs):02}"
+
+        # Crear tablero inicial
+        def create_board():
+            numbers = list(range(1, 9)) + [None]
+            random.shuffle(numbers)
+            return [numbers[i:i+3] for i in range(0, 9, 3)]
+
+        def reset_game():
+            global board, start_time
+            board = create_board()
+            start_time = time.time()
+            #pygame.mixer.Sound.play(reset_sound)
+
+        # Función para cargar los puntajes
+        def load_top_scores():
+            try:
+                with open(SCORES_FILE, "r") as file:
+                    return json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                return []
+
+        # Función para guardar los puntajes
+        def save_top_scores(top_scores):
+            with open(SCORES_FILE, "w") as file:
+                json.dump(top_scores, file)
+
+        def STM_win():
+            pygame.display.set_caption("Steal The Money")
+
+            while True:
+                screen.blit(BGWinSTM, (0,0))
+                STM_win_mouse_pos = pygame.mouse.get_pos()
+
+                STM_grabthemoney = Button(image=None, pos=(400, 190), 
+                        text_input="GRAB THE MONEY", font=get_font(50), base_color="black", hovering_color="red")
+            
+                STM_reset = Button(image=None, pos=(900, 190), 
+                                text_input="RESET", font=get_font(50), base_color="black", hovering_color="red")
+                    
+                for button in [STM_grabthemoney, STM_reset]:
+                    button.changeColor(STM_win_mouse_pos)
+                    button.update(screen)
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if STM_grabthemoney.checkForInput(STM_win_mouse_pos):
+                            menu_puzzle_numerico()
+                        if STM_reset.checkForInput(STM_win_mouse_pos):
+                            Steal_the_money()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+
+                pygame.display.update()
+
+        board = create_board()
+
+        # Dibujar el tablero
+        def draw_board():
+            top_left_x = (SCREEN_WIDTH - BOARD_SIZE) // 2
+            top_left_y = (SCREEN_HEIGHT - BOARD_SIZE) // 2
+
+            # Dibujar fondo del tablero
+            background_rect = pygame.Rect(top_left_x, top_left_y, BOARD_SIZE, BOARD_SIZE)
+            pygame.draw.rect(screen, "gray", background_rect)  # Cambia el color según prefieras
+
+            for row in range(3):
+                for col in range(3):
+                    value = board[row][col]
+                    x = top_left_x + col * TILE_SIZE
+                    y = top_left_y + row * TILE_SIZE
+                    rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+                    pygame.draw.rect(screen, "black", rect, 8)  # Grosor de las líneas modificado
+                    if value is not None:
+                        font = pygame.font.Font("assets/font.ttf", 80)  # Fuente modificada
+                        text = font.render(str(value), True, "black")  # Color modificado
+                        text_rect = text.get_rect(center=(x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+                        screen.blit(text, text_rect)
+
+        # Dibujar interfaz adicional (botón y cronómetro)
+        def draw_ui():
+            font = pygame.font.Font("assets/font.ttf", 50)
+
+            # Botón de salida
+            button_rect = pygame.Rect((SCREEN_WIDTH - 200) // 2, SCREEN_HEIGHT - 140, 200, 50)
+            pygame.draw.rect(screen, "#b8b5b9", button_rect)
+            text = font.render("EXIT", True, "red")
+            text_rect = text.get_rect(center=button_rect.center)
+            screen.blit(text, text_rect)
+
+            # Cronómetro
+            elapsed = time.time() - start_time
+            timer_text = font.render(format_time(elapsed), True, "RED")
+            timer_rect = timer_text.get_rect(center=(SCREEN_WIDTH // 2, 120))
+            screen.blit(timer_text, timer_rect)
+
+        # Buscar posición de la casilla vacía
+        def find_empty():
+            for row in range(3):
+                for col in range(3):
+                    if board[row][col] is None:
+                        return row, col
+
+        # Mover casilla
+        def move_tile(row, col):
+            empty_row, empty_col = find_empty()
+            if abs(empty_row - row) + abs(empty_col - col) == 1:  # Movimiento válido
+                board[empty_row][empty_col], board[row][col] = board[row][col], board[empty_row][empty_col]
+                #pygame.mixer.Sound.play(move_sound)
+
+        # Comprobar si se ha ganado
+        def check_win():
+            target = list(range(1, 9)) + [None]
+            current = [cell for row in board for cell in row]
+            return current == target
+        
+        # Registrar el puntaje del jugador
+        def register_score(player_name, elapsed_time):
+            top_scores = load_top_scores()
+            top_scores.append({"name": player_name, "time": format_time(elapsed_time)})
+            top_scores = sorted(top_scores, key=lambda x: x["time"])[:5]
+            save_top_scores(top_scores)
+
+        # Bucle principal
+        while True:
+            screen.blit(BGPuzzleNumerico, (0, 0))
+            draw_board()
+            draw_ui()
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                elif event.type == pygame.KEYDOWN:
+                    empty_row, empty_col = find_empty()
+                    if event.key == pygame.K_UP and empty_row < 2:  # Mover hacia abajo
+                        move_tile(empty_row + 1, empty_col)
+                    elif event.key == pygame.K_DOWN and empty_row > 0:  # Mover hacia arriba
+                        move_tile(empty_row - 1, empty_col)
+                    elif event.key == pygame.K_LEFT and empty_col < 2:  # Mover hacia la derecha
+                        move_tile(empty_row, empty_col + 1)
+                    elif event.key == pygame.K_RIGHT and empty_col > 0:  # Mover hacia la izquierda
+                        move_tile(empty_row, empty_col - 1)
+                    if event.key == pygame.K_w and empty_row < 2:  # Mover hacia abajo
+                        move_tile(empty_row + 1, empty_col)
+                    elif event.key == pygame.K_s and empty_row > 0:  # Mover hacia arriba
+                        move_tile(empty_row - 1, empty_col)
+                    elif event.key == pygame.K_a and empty_col < 2:  # Mover hacia la derecha
+                        move_tile(empty_row, empty_col + 1)
+                    elif event.key == pygame.K_d and empty_col > 0:  # Mover hacia la izquierda
+                        move_tile(empty_row, empty_col - 1)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    button_rect = pygame.Rect((SCREEN_WIDTH - 200) // 2, SCREEN_HEIGHT - 140, 200, 50)
+                    if button_rect.collidepoint(x, y):
+                        menu_puzzle_numerico()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+            
+            if check_win():
+                register_score(player_name, time.time() - start_time)
+                STM_win()
+    
+    def tutorial_STM():
+        pygame.display.set_caption("Tutorial Steal The Money")
+        loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+        
+        def tutorial_STM_game():
+            # Dimensiones de la pantalla
+            SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
+            BOARD_SIZE = 400
+            TILE_SIZE = BOARD_SIZE // 3
+            BUTTON_HEIGHT = 50
+
+            # Inicializar pantalla
+            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            pygame.display.set_caption("Steal The Money")
+            loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+
+                # Dibujar la barra de carga
+                if loading_bar.draw():  # Si la barra de carga está llena
+                    break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+
+            # Variables del cronómetro
+            start_time = time.time()
+            def format_time(elapsed):
+                mins, secs = divmod(elapsed, 60)
+                return f"{int(mins):02}:{int(secs):02}"
+
+            # Crear tablero inicial
+            def create_board():
+                numbers = list(range(1, 9)) + [None]
+                random.shuffle(numbers)
+                return [numbers[i:i+3] for i in range(0, 9, 3)]
+
+            def reset_game():
+                global board, start_time
+                board = create_board()
+                start_time = time.time()
+                #pygame.mixer.Sound.play(reset_sound)
+
+            def STM_win_tuto():
+                pygame.display.set_caption("Steal The Money")
+
+                while True:
+                    screen.blit(BGWinSTM, (0,0))
+                    STM_win_mouse_pos = pygame.mouse.get_pos()
+
+                    STM_grabthemoney = Button(image=None, pos=(400, 190), 
+                            text_input="GRAB THE MONEY", font=get_font(50), base_color="black", hovering_color="red")
+            
+                    STM_reset = Button(image=None, pos=(900, 190), 
+                                    text_input="RESET", font=get_font(50), base_color="black", hovering_color="red")
+                    
+                    for button in [STM_grabthemoney, STM_reset]:
+                        button.changeColor(STM_win_mouse_pos)
+                        button.update(screen)
+
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            if STM_grabthemoney.checkForInput(STM_win_mouse_pos):
+                                tutorial_STM()
+                            if STM_reset.checkForInput(STM_win_mouse_pos):
+                                tutorial_STM_game()
+                        if event.type == pygame.USEREVENT:  # Si termina una canción
+                            avanzar_playlist(playlist)
+
+                    pygame.display.update()
+
+            board = create_board()
+
+            # Dibujar el tablero
+            def draw_board():
+                top_left_x = (SCREEN_WIDTH - BOARD_SIZE) // 2
+                top_left_y = (SCREEN_HEIGHT - BOARD_SIZE) // 2
+
+                # Dibujar fondo del tablero
+                background_rect = pygame.Rect(top_left_x, top_left_y, BOARD_SIZE, BOARD_SIZE)
+                pygame.draw.rect(screen, "gray", background_rect)  # Cambia el color según prefieras
+
+                for row in range(3):
+                    for col in range(3):
+                        value = board[row][col]
+                        x = top_left_x + col * TILE_SIZE
+                        y = top_left_y + row * TILE_SIZE
+                        rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
+                        pygame.draw.rect(screen, "black", rect, 8)  # Grosor de las líneas modificado
+                        if value is not None:
+                            font = pygame.font.Font("assets/font.ttf", 80)  # Fuente modificada
+                            text = font.render(str(value), True, "black")  # Color modificado
+                            text_rect = text.get_rect(center=(x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+                            screen.blit(text, text_rect)
+
+            # Dibujar interfaz adicional (botón y cronómetro)
+            def draw_ui():
+                font = pygame.font.Font("assets/font.ttf", 50)
+
+                # Botón de salida
+                button_rect = pygame.Rect((SCREEN_WIDTH - 200) // 2, SCREEN_HEIGHT - 140, 200, 50)
+                pygame.draw.rect(screen, "#b8b5b9", button_rect)
+                text = font.render("EXIT", True, "red")
+                text_rect = text.get_rect(center=button_rect.center)
+                screen.blit(text, text_rect)
+
+                # Cronómetro
+                elapsed = time.time() - start_time
+                timer_text = font.render(format_time(elapsed), True, "RED")
+                timer_rect = timer_text.get_rect(center=(SCREEN_WIDTH // 2, 120))
+                screen.blit(timer_text, timer_rect)
+
+            # Buscar posición de la casilla vacía
+            def find_empty():
+                for row in range(3):
+                    for col in range(3):
+                        if board[row][col] is None:
+                            return row, col
+
+            # Mover casilla
+            def move_tile(row, col):
+                empty_row, empty_col = find_empty()
+                if abs(empty_row - row) + abs(empty_col - col) == 1:  # Movimiento válido
+                    board[empty_row][empty_col], board[row][col] = board[row][col], board[empty_row][empty_col]
+                    #pygame.mixer.Sound.play(move_sound)
+
+            # Comprobar si se ha ganado
+            def check_win():
+                target = list(range(1, 9)) + [None]
+                current = [cell for row in board for cell in row]
+                return current == target
+
+            # Bucle principal
+            while True:
+                screen.blit(BGPuzzleNumerico, (0, 0))
+                draw_board()
+                draw_ui()
+                pygame.display.flip()
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                    elif event.type == pygame.KEYDOWN:
+                        empty_row, empty_col = find_empty()
+                        if event.key == pygame.K_UP and empty_row < 2:  # Mover hacia abajo
+                            move_tile(empty_row + 1, empty_col)
+                        elif event.key == pygame.K_DOWN and empty_row > 0:  # Mover hacia arriba
+                            move_tile(empty_row - 1, empty_col)
+                        elif event.key == pygame.K_LEFT and empty_col < 2:  # Mover hacia la derecha
+                            move_tile(empty_row, empty_col + 1)
+                        elif event.key == pygame.K_RIGHT and empty_col > 0:  # Mover hacia la izquierda
+                            move_tile(empty_row, empty_col - 1)
+                        if event.key == pygame.K_w and empty_row < 2:  # Mover hacia abajo
+                            move_tile(empty_row + 1, empty_col)
+                        elif event.key == pygame.K_s and empty_row > 0:  # Mover hacia arriba
+                            move_tile(empty_row - 1, empty_col)
+                        elif event.key == pygame.K_a and empty_col < 2:  # Mover hacia la derecha
+                            move_tile(empty_row, empty_col + 1)
+                        elif event.key == pygame.K_d and empty_col > 0:  # Mover hacia la izquierda
+                            move_tile(empty_row, empty_col - 1)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x, y = event.pos
+                        button_rect = pygame.Rect((SCREEN_WIDTH - 200) // 2, SCREEN_HEIGHT - 140, 200, 50)
+                        if button_rect.collidepoint(x, y):
+                            tutorial_STM()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+                
+                elapsed = time.time() - start_time
+                if elapsed >= 30:
+                    STM_win_tuto()
+
+                if check_win():
+                    STM_win_tuto()
+        
+        while True:
+            screen.blit(BGTutorialSTM, (0,0))
+            tutorial_STM_mouse_pos = pygame.mouse.get_pos()
+
+            contorno("TUTORIAL", get_font(80), "red", "black", 640, 120)
+
+            STM_tutorial_back = Button(BackSTM, pos=(60, 390), 
+                            text_input="", font=get_font(60), base_color="#222323", hovering_color="#e1cb86")
+            
+            STM_tutorial = Button(image=None, pos=(1070, 580), 
+                            text_input="TUTORIAL", font=get_font(30), base_color="black", hovering_color="red")
+            
+            for button in [STM_tutorial_back, STM_tutorial]:
+                button.changeColor(tutorial_STM_mouse_pos)
+                button.update(screen)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if STM_tutorial_back.checkForInput(tutorial_STM_mouse_pos):
+                        menu_puzzle_numerico()
+                    if STM_tutorial.checkForInput(tutorial_STM_mouse_pos):
+                        tutorial_STM_game()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            pygame.display.update()
+    
+    def score_STM():
+        pygame.display.set_caption("Score Steal The Money")
+        loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
+        SCORES_FILE = "top_scores_STM.json"
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+        
+        def load_top_scores():
+            try:
+                with open(SCORES_FILE, "r") as file:
+                    return json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                return []
+        
+        # Cargar puntajes
+        top_scores = load_top_scores()
+        
+        while True:
+            screen.blit(BGScoresSTM, (0, 0))
+
+            STM_score_mouse_pos = pygame.mouse.get_pos()
+
+            ##e2c56e
+
+            contorno("TOP SCORES", get_font(90), "red", "black", 640, 120)
+            contorno("RANK", get_font(80), "#e2c56e", "black", 380, 220)
+            contorno("NAME", get_font(80), "#e2c56e", "black", 640, 220)
+            contorno("SCORE", get_font(80), "#e2c56e", "black", 900, 220)
+
+            STM_score_back = Button(BackSTM, pos=(60, 390), 
+                            text_input="", font=get_font(60), base_color="#222323", hovering_color="#e1cb86")
+            
+            for button in [STM_score_back]:
+                button.changeColor(STM_score_mouse_pos)
+                button.update(screen)
+
+            # Dibujar puntajes
+            for i, entry in enumerate(top_scores[:5]):
+                rank_text = f"{i + 1}st" if i == 0 else f"{i + 1}nd" if i == 1 else f"{i + 1}rd" if i == 2 else f"{i + 1}th"
+                rank_text = get_font(50).render(rank_text, True, "black")
+                rank_text_rect = rank_text.get_rect(center=(380, 300 + i *60))
+                screen.blit(rank_text, rank_text_rect)
+                name_text = get_font(50).render(entry["name"], True, "black")
+                name_text_rect = name_text.get_rect(center=(640, 300 + i * 60))
+                screen.blit(name_text, name_text_rect)
+                score_text = get_font(50).render(str(entry["time"]), True, "black")
+                score_text_rect = score_text.get_rect(center=(900, 300 + i * 60))
+                screen.blit(score_text, score_text_rect)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if STM_score_back.checkForInput(STM_score_mouse_pos):
+                        menu_puzzle_numerico()
+
+            pygame.display.update()
+
+
+    while True:
+        screen.blit(BGMenuPuzzleNumerico, (0, 0))
+
+        STM_mouse_pos = pygame.mouse.get_pos()
+
+        contorno("STEAL THE MONEY", get_font(100), "#e1cb86", "black", 640, 80)
+
+        STM_play = Button(ButtonSTM, pos=(160, 280), 
+                            text_input="PLAY", font=get_font(60), base_color="#222323", hovering_color="#e1cb86")
+        
+        STM_back = Button(ButtonSTM, pos=(480, 320), 
+                            text_input="BACK", font=get_font(60), base_color="#222323", hovering_color="#e1cb86")
+        
+        STM_tutorial = Button(ButtonSTM, pos=(800, 260), 
+                            text_input="TUTORIAL", font=get_font(40), base_color="#222323", hovering_color="#e1cb86")
+        
+        STM_score = Button(ButtonSTM, pos=(1120, 290), 
+                            text_input="SCORE", font=get_font(55), base_color="#222323", hovering_color="#e1cb86")
+        
+        for button in [STM_play, STM_back, STM_tutorial, STM_score]:
+            button.changeColor(STM_mouse_pos)
+            button.update(screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if simon_dice_exit.checkForInput(simon_dice_mouse_pos):
+                if STM_back.checkForInput(STM_mouse_pos):
                     games()
+                if STM_play.checkForInput(STM_mouse_pos):
+                    Steal_the_money()
+                if STM_tutorial.checkForInput(STM_mouse_pos):
+                    tutorial_STM()
+                if STM_score.checkForInput(STM_mouse_pos):
+                    score_STM()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
 
         pygame.display.update()
 
@@ -1315,29 +1998,24 @@ def menu_colores_y_figuras():
     pygame.display.set_caption("Colores Y Figuras")
 
     while True:
-        screen.blit(BGMapache, [0, 0])
+        screen.blit(BGMenuCYF, [0, 0])
 
-        simon_dice_mouse_pos = pygame.mouse.get_pos()
+        CYF_mouse_pos = pygame.mouse.get_pos()
 
-        Biomind_titeld = get_font(30).render("MAPACHE DUERMIENDO", True, "black")
-        Biomind_titeld_rect = Biomind_titeld.get_rect(center=(450,340))
-        screen.blit(Biomind_titeld, Biomind_titeld_rect)
-        About_P1 = get_font(30).render("PORFAVOR SALGA", True, "black")
-        About_P1_rect = About_P1.get_rect(center=(450,380))
-        screen.blit(About_P1, About_P1_rect)
+        contorno("COLORES Y FIGURAS", get_font(100), "#444774", "black", 640, 110)
 
-        simon_dice_exit = Button(image=None, pos=(430, 570), 
-                            text_input="EXIT", font=get_font(60), base_color="#d08159", hovering_color="#ffecd6")
+        CYF_back = Button(image=None, pos=(270, 560), 
+                            text_input="BACK", font=get_font(60), base_color="black", hovering_color="#ffecd6")
 
-        simon_dice_exit.changeColor(simon_dice_mouse_pos)
-        simon_dice_exit.update(screen)
+        CYF_back.changeColor(CYF_mouse_pos)
+        CYF_back.update(screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if simon_dice_exit.checkForInput(simon_dice_mouse_pos):
+                if CYF_back.checkForInput(CYF_mouse_pos):
                     games()
 
         pygame.display.update()
@@ -1346,6 +2024,7 @@ def main_menu():
     pygame.display.set_caption("Menú")
     loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
 
+    sounds_loadingbars[0].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1407,6 +2086,22 @@ def get_player_name():
     global player_name  # Declarar que se va a modificar la variable global
     pygame.display.set_caption("Menú")
     name = player_name  # Usar el valor actual como base para modificar
+    loading_bar = LoadingBar(screen, FondoMain, start_color=(255, 212, 163), end_color=(208, 129, 89), text_color="#d08159", loading_time=1.5, segments=10)
+
+    sounds_loadingbars[0].play(loops=0)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        pygame.time.wait(100)
 
     while True:
         screen.blit(FondoMain, (0, 0))
