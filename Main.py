@@ -67,6 +67,13 @@ BGScoresSTM = pygame.image.load("assets/BGScoresSTM.png")
 ColoresyfigurasSpray = pygame.image.load("assets/ColoresYFigurasSpray.png")
 ColoresyfigurasSprayS = pygame.image.load("assets/ColoresYFigurasSprayS.png")
 BGMenuCYF = pygame.image.load("assets/BGMenuFYC.png")
+CakeSpray = pygame.image.load("assets/CakeSpray.png")
+CakeSprayS = pygame.image.load("assets/CakeSprayS.png")
+BGLoadingCYF = pygame.image.load("assets/BGLoadingCYF.png")
+BotonExit = pygame.image.load("assets/BotonExit.png")
+BotonExitSpray = pygame.image.load("assets/BotonExitSpray.png")
+BGTutorialCYF = pygame.image.load("assets/BGTutorialCYF.png")
+BGScoreCYF = pygame.image.load("assets/BGScoreCYF.png")
 
 #Reaction Game
 JuegodereaccionSpray = pygame.image.load("assets/JuegoDeReaccionSpray.png")
@@ -1855,6 +1862,13 @@ def menu_puzzle_numerico():
             tutorial_STM_mouse_pos = pygame.mouse.get_pos()
 
             contorno("TUTORIAL", get_font(80), "red", "black", 640, 120)
+            contorno1("¡Bienvenido al juego de puzzle numérico! Tu", get_font(30), "#e1cb86", "black", 640, 200)
+            contorno1("objetivo es ordenar los números del 1 al 8 en un", get_font(30), "#e1cb86", "black", 640, 250)
+            contorno1("tablero de 3x3, dejando la casilla vacía en la esquina", get_font(30), "#e1cb86", "black", 640, 300)
+            contorno1("inferior derecha. Desliza las piezas moviéndolas", get_font(30), "#e1cb86", "black", 640, 350)
+            contorno1("hacia el espacio vacío para reorganizarlas. Usa las", get_font(30), "#e1cb86", "black", 640, 400)
+            contorno1("flechas del teclado para jugar. ¡Piensa estratégicamente,", get_font(30), "#e1cb86", "black", 640, 450)
+            contorno1("resuelve el puzzle y demuestra tu habilidad!", get_font(30), "#e1cb86", "black", 640, 500)
 
             STM_tutorial_back = Button(BackSTM, pos=(60, 390), 
                             text_input="", font=get_font(60), base_color="#222323", hovering_color="#e1cb86")
@@ -1996,6 +2010,717 @@ def menu_puzzle_numerico():
 
 def menu_colores_y_figuras():
     pygame.display.set_caption("Colores Y Figuras")
+    loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
+
+        # Dibujar la barra de carga
+        if loading_bar.draw():  # Si la barra de carga está llena
+            break  # Detener el bucle principal cuando la barra esté llena
+
+        # Esperar un poco para que el evento de carga se vea
+        pygame.time.wait(100)
+
+    Scores_file = "Top_scores_CYF.json"
+    
+    def CYF_game():
+        #screen = pygame.display.set_mode((1280, 720))
+        pygame.display.set_caption("Colores Y Figuras")
+        loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+
+        # Configuración de la pantalla
+        WIDTH, HEIGHT = 1280, 720
+
+        BGFigurasYColores = pygame.image.load("assets/BGgameFYC.png")
+
+        # Colores
+        COLORS = {
+            "ROJO": (165, 48, 48),
+            "VERDE": (117, 167, 67),
+            "AZUL": (79, 143, 186),
+            "AMARILLO": (232, 193, 112),
+            "MORADO": (64, 39, 81)
+        }
+
+        # Configuración del reloj
+        clock = pygame.time.Clock()
+        FPS = 60
+
+        # Clase Figura
+        class Figura:
+            def __init__(self, x, y, color, tipo):
+                self.x = x
+                self.y = y
+                self.color = color
+                self.tipo = tipo
+                self.rect = pygame.Rect(x, y, 50, 50)
+
+            def dibujar(self, pantalla):
+                if self.tipo == "CIRCULO":
+                    pygame.draw.circle(pantalla, self.color, (self.x + 25, self.y + 25), 25)
+                    pygame.draw.circle(pantalla, (0, 0, 0), (self.x + 25, self.y + 25), 25, 2)  # Contorno negro
+                elif self.tipo == "CUADRADO":
+                    pygame.draw.rect(pantalla, self.color, self.rect)
+                    pygame.draw.rect(pantalla, (0, 0, 0), self.rect, 2)  # Contorno negro
+                elif self.tipo == "TRIANGULO":
+                    puntos = [(self.x + 25, self.y), (self.x, self.y + 50), (self.x + 50, self.y + 50)]
+                    pygame.draw.polygon(pantalla, self.color, puntos)
+                    pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                elif self.tipo == "RECTANGULO":
+                    pygame.draw.rect(pantalla, self.color, (self.x, self.y, 60, 40))
+                    pygame.draw.rect(pantalla, (0, 0, 0), (self.x, self.y, 60, 40), 2)  # Contorno negro
+                elif self.tipo == "ROMBO":
+                    puntos = [(self.x + 25, self.y), (self.x, self.y + 25), (self.x + 25, self.y + 50), (self.x + 50, self.y + 25)]
+                    pygame.draw.polygon(pantalla, self.color, puntos)
+                    pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                elif self.tipo == "ESTRELLA":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 30, self.y + 20),
+                        (self.x + 50, self.y + 20),
+                        (self.x + 35, self.y + 30),
+                        (self.x + 40, self.y + 50),
+                        (self.x + 25, self.y + 40),
+                        (self.x + 10, self.y + 50),
+                        (self.x + 15, self.y + 30),
+                        (self.x, self.y + 20),
+                        (self.x + 20, self.y + 20)
+                    ]
+                    pygame.draw.polygon(pantalla, self.color, puntos)
+                    pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                elif self.tipo == "OVALO":
+                    pygame.draw.ellipse(pantalla, self.color, (self.x, self.y, 60, 40))
+                    pygame.draw.ellipse(pantalla, (0, 0, 0), (self.x, self.y, 60, 40), 2)  # Contorno negro
+                elif self.tipo == "PENTAGONO":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 50, self.y + 20),
+                        (self.x + 40, self.y + 50),
+                        (self.x + 10, self.y + 50),
+                        (self.x, self.y + 20)
+                    ]
+                    pygame.draw.polygon(pantalla, self.color, puntos)
+                    pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                elif self.tipo == "HEXAGONO":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 45, self.y + 15),
+                        (self.x + 45, self.y + 35),
+                        (self.x + 25, self.y + 50),
+                        (self.x + 5, self.y + 35),
+                        (self.x + 5, self.y + 15)
+                    ]
+                    pygame.draw.polygon(pantalla, self.color, puntos)
+                    pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+
+
+            def clicado(self, pos):
+                if self.tipo == "CIRCULO":
+                    distancia = ((self.x + 25 - pos[0]) ** 2 + (self.y + 25 - pos[1]) ** 2) ** 0.5
+                    return distancia <= 25
+                elif self.tipo == "CUADRADO":
+                    return self.rect.collidepoint(pos)
+                elif self.tipo == "TRIANGULO":
+                    puntos = [(self.x + 25, self.y), (self.x, self.y + 50), (self.x + 50, self.y + 50)]
+                    return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                elif self.tipo == "RECTANGULO":
+                    return pygame.Rect(self.x, self.y, 60, 40).collidepoint(pos)
+                elif self.tipo == "ROMBO":
+                    puntos = [(self.x + 25, self.y), (self.x, self.y + 25), (self.x + 25, self.y + 50), (self.x + 50, self.y + 25)]
+                    return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                elif self.tipo == "ESTRELLA":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 30, self.y + 20),
+                        (self.x + 50, self.y + 20),
+                        (self.x + 35, self.y + 30),
+                        (self.x + 40, self.y + 50),
+                        (self.x + 25, self.y + 40),
+                        (self.x + 10, self.y + 50),
+                        (self.x + 15, self.y + 30),
+                        (self.x, self.y + 20),
+                        (self.x + 20, self.y + 20)
+                    ]
+                    return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                elif self.tipo == "OVALO":
+                    return pygame.Rect(self.x, self.y, 60, 40).collidepoint(pos)
+                elif self.tipo == "PENTAGONO":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 50, self.y + 20),
+                        (self.x + 40, self.y + 50),
+                        (self.x + 10, self.y + 50),
+                        (self.x, self.y + 20)
+                    ]
+                    return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                elif self.tipo == "HEXAGONO":
+                    puntos = [
+                        (self.x + 25, self.y),
+                        (self.x + 45, self.y + 15),
+                        (self.x + 45, self.y + 35),
+                        (self.x + 25, self.y + 50),
+                        (self.x + 5, self.y + 35),
+                        (self.x + 5, self.y + 15)
+                    ]
+                    return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+        
+        def game_over(puntaje):
+            while True:
+                screen.blit(BGFigurasYColores, (0,0))
+                pos = pygame.mouse.get_pos()
+
+                contorno("GAME OVER", get_font(100), "red", "black", 640, 280)
+                contorno1(f"PUNTAJE: {puntaje}", get_font(60), "#75a743", "black", 640, 360)
+                contorno1("PRESS R TO RESET", get_font(40), "#e8c170", "black", 640, 420)
+                # Dibujar texto
+                contorno1(objetivo_texto, get_font(30), "#e8c170", "black", 380, 40)
+
+                # Dibujar temporizador
+                contorno1(f"TIEMPO RESTANTE: {int(tiempo_restante)} s", get_font(30), "#a53030","black", 380, 80)
+
+                CYF_exit = Spray(base_image=BotonExit, hover_image=BotonExitSpray, pos=(1220, 660))
+                CYF_exit.changeImage(pos)
+                CYF_exit.update(screen)  # Dibujar el botón
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_r:
+                            CYF_game()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if CYF_exit.checkForInput(pos):
+                            menu_colores_y_figuras()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+                
+                pygame.display.update()
+
+        def save_score(new_score, player_name):
+            try:
+                with open(Scores_file, "r") as file:
+                    scores = json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                scores = [{"name": "---", "score": 0} for _ in range(5)]
+            
+            # Añadir el nuevo puntaje
+            scores.append({"name": player_name, "score": new_score})
+            # Ordenar por puntaje descendente y mantener solo los 5 mejores
+            scores = sorted(scores, key=lambda x: x["score"], reverse=True)[:5]
+
+            # Guardar los puntajes actualizados
+            with open(Scores_file, "w") as file:
+                json.dump(scores, file)
+        
+        # Función principal del juego  
+        running = True
+        nivel = 1
+        puntaje = 0
+        tiempo_limite = 5  # Tiempo inicial en segundos
+
+        while running:
+            # Generar figuras
+            figuras = []
+            for _ in range(nivel + 2):
+                x = random.randint(50, WIDTH - 100)
+                y = random.randint(50, HEIGHT - 100)
+                color = random.choice(list(COLORS.values()))
+                tipo = random.choice(["CIRCULO", "CUADRADO", "TRIANGULO", "RECTANGULO", "ROMBO", "ESTRELLA", "OVALO", "PENTAGONO", "HEXAGONO"])
+                figuras.append(Figura(x, y, color, tipo))
+
+            # Elegir figura objetivo
+            objetivo = random.choice(figuras)
+            nombre_color = [k for k, v in COLORS.items() if v == objetivo.color][0]
+
+            # Identificar todas las figuras que coincidan con el objetivo
+            figuras_objetivo = [figura for figura in figuras if figura.color == objetivo.color and figura.tipo == objetivo.tipo]
+
+            objetivo_texto = f"HAZ CLIC EN UN {objetivo.tipo} DE COLOR {nombre_color}"
+
+            # Temporizador
+            tiempo_restante = tiempo_limite
+            inicio_nivel = pygame.time.get_ticks()
+
+            # Ciclo del nivel
+            while True:
+                screen.blit(BGFigurasYColores, (0,0))
+                pos = pygame.mouse.get_pos()
+
+                # Calcular tiempo restante
+                tiempo_actual = pygame.time.get_ticks()
+                tiempo_restante = tiempo_limite - (tiempo_actual - inicio_nivel) / 1000
+
+                if tiempo_restante <= 0:
+                    save_score(puntaje, player_name)
+                    game_over(puntaje)
+
+                # Dibujar texto
+                contorno1(objetivo_texto, get_font(30), "#e8c170", "black", 380, 40)
+
+                # Dibujar temporizador
+                contorno1(f"TIEMPO RESTANTE: {int(tiempo_restante)} s", get_font(30), "#a53030","black", 380, 80)
+
+                CYF_exit = Spray(base_image=BotonExit, hover_image=BotonExitSpray, pos=(1220, 660))
+                CYF_exit.changeImage(pos)
+                CYF_exit.update(screen)  # Dibujar el botón
+
+                # Dibujar figuras
+                for figura in figuras:
+                    figura.dibujar(screen)
+
+                # Manejo de eventos
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if any(figura.clicado(pos) for figura in figuras_objetivo):
+                            puntaje += 1
+                            nivel += 1
+                            tiempo_limite += 0.5  # Incrementar tiempo límite con cada acierto
+                            break
+                        else:
+                            save_score(puntaje, player_name)
+                            game_over(puntaje)
+                        if CYF_exit.checkForInput(pos):
+                            menu_colores_y_figuras()
+
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+
+                else:
+                    # Actualizar pantalla
+                    pygame.display.flip()
+                    clock.tick(FPS)
+                    continue
+                break
+
+    def CYF_tutorial():
+        pygame.display.set_caption("Tutorial Colores Y Figuras")
+        loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+
+        def CYF_tutorial_game():
+            #screen = pygame.display.set_mode((1280, 720))
+            pygame.display.set_caption("Colores Y Figuras")
+            loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.USEREVENT:  # Si termina una canción
+                        avanzar_playlist(playlist)
+
+                # Dibujar la barra de carga
+                if loading_bar.draw():  # Si la barra de carga está llena
+                    break  # Detener el bucle principal cuando la barra esté llena
+
+                # Esperar un poco para que el evento de carga se vea
+                pygame.time.wait(100)
+
+            # Configuración de la pantalla
+            WIDTH, HEIGHT = 1280, 720
+
+            BGFigurasYColores = pygame.image.load("assets/BGgameFYC.png")
+
+            # Colores
+            COLORS = {
+                "ROJO": (165, 48, 48),
+                "VERDE": (117, 167, 67),
+                "AZUL": (79, 143, 186),
+                "AMARILLO": (232, 193, 112),
+                "MORADO": (64, 39, 81)
+            }
+
+            # Configuración del reloj
+            clock = pygame.time.Clock()
+            FPS = 60
+
+            # Clase Figura
+            class Figura:
+                def __init__(self, x, y, color, tipo):
+                    self.x = x
+                    self.y = y
+                    self.color = color
+                    self.tipo = tipo
+                    self.rect = pygame.Rect(x, y, 50, 50)
+
+                def dibujar(self, pantalla):
+                    if self.tipo == "CIRCULO":
+                        pygame.draw.circle(pantalla, self.color, (self.x + 25, self.y + 25), 25)
+                        pygame.draw.circle(pantalla, (0, 0, 0), (self.x + 25, self.y + 25), 25, 2)  # Contorno negro
+                    elif self.tipo == "CUADRADO":
+                        pygame.draw.rect(pantalla, self.color, self.rect)
+                        pygame.draw.rect(pantalla, (0, 0, 0), self.rect, 2)  # Contorno negro
+                    elif self.tipo == "TRIANGULO":
+                        puntos = [(self.x + 25, self.y), (self.x, self.y + 50), (self.x + 50, self.y + 50)]
+                        pygame.draw.polygon(pantalla, self.color, puntos)
+                        pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                    elif self.tipo == "RECTANGULO":
+                        pygame.draw.rect(pantalla, self.color, (self.x, self.y, 60, 40))
+                        pygame.draw.rect(pantalla, (0, 0, 0), (self.x, self.y, 60, 40), 2)  # Contorno negro
+                    elif self.tipo == "ROMBO":
+                        puntos = [(self.x + 25, self.y), (self.x, self.y + 25), (self.x + 25, self.y + 50), (self.x + 50, self.y + 25)]
+                        pygame.draw.polygon(pantalla, self.color, puntos)
+                        pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                    elif self.tipo == "ESTRELLA":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 30, self.y + 20),
+                            (self.x + 50, self.y + 20),
+                            (self.x + 35, self.y + 30),
+                            (self.x + 40, self.y + 50),
+                            (self.x + 25, self.y + 40),
+                            (self.x + 10, self.y + 50),
+                            (self.x + 15, self.y + 30),
+                            (self.x, self.y + 20),
+                            (self.x + 20, self.y + 20)
+                        ]
+                        pygame.draw.polygon(pantalla, self.color, puntos)
+                        pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                    elif self.tipo == "OVALO":
+                        pygame.draw.ellipse(pantalla, self.color, (self.x, self.y, 60, 40))
+                        pygame.draw.ellipse(pantalla, (0, 0, 0), (self.x, self.y, 60, 40), 2)  # Contorno negro
+                    elif self.tipo == "PENTAGONO":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 50, self.y + 20),
+                            (self.x + 40, self.y + 50),
+                            (self.x + 10, self.y + 50),
+                            (self.x, self.y + 20)
+                        ]
+                        pygame.draw.polygon(pantalla, self.color, puntos)
+                        pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+                    elif self.tipo == "HEXAGONO":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 45, self.y + 15),
+                            (self.x + 45, self.y + 35),
+                            (self.x + 25, self.y + 50),
+                            (self.x + 5, self.y + 35),
+                            (self.x + 5, self.y + 15)
+                        ]
+                        pygame.draw.polygon(pantalla, self.color, puntos)
+                        pygame.draw.polygon(pantalla, (0, 0, 0), puntos, 2)  # Contorno negro
+
+
+                def clicado(self, pos):
+                    if self.tipo == "CIRCULO":
+                        distancia = ((self.x + 25 - pos[0]) ** 2 + (self.y + 25 - pos[1]) ** 2) ** 0.5
+                        return distancia <= 25
+                    elif self.tipo == "CUADRADO":
+                        return self.rect.collidepoint(pos)
+                    elif self.tipo == "TRIANGULO":
+                        puntos = [(self.x + 25, self.y), (self.x, self.y + 50), (self.x + 50, self.y + 50)]
+                        return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                    elif self.tipo == "RECTANGULO":
+                        return pygame.Rect(self.x, self.y, 60, 40).collidepoint(pos)
+                    elif self.tipo == "ROMBO":
+                        puntos = [(self.x + 25, self.y), (self.x, self.y + 25), (self.x + 25, self.y + 50), (self.x + 50, self.y + 25)]
+                        return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                    elif self.tipo == "ESTRELLA":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 30, self.y + 20),
+                            (self.x + 50, self.y + 20),
+                            (self.x + 35, self.y + 30),
+                            (self.x + 40, self.y + 50),
+                            (self.x + 25, self.y + 40),
+                            (self.x + 10, self.y + 50),
+                            (self.x + 15, self.y + 30),
+                            (self.x, self.y + 20),
+                            (self.x + 20, self.y + 20)
+                        ]
+                        return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                    elif self.tipo == "OVALO":
+                        return pygame.Rect(self.x, self.y, 60, 40).collidepoint(pos)
+                    elif self.tipo == "PENTAGONO":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 50, self.y + 20),
+                            (self.x + 40, self.y + 50),
+                            (self.x + 10, self.y + 50),
+                            (self.x, self.y + 20)
+                        ]
+                        return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+                    elif self.tipo == "HEXAGONO":
+                        puntos = [
+                            (self.x + 25, self.y),
+                            (self.x + 45, self.y + 15),
+                            (self.x + 45, self.y + 35),
+                            (self.x + 25, self.y + 50),
+                            (self.x + 5, self.y + 35),
+                            (self.x + 5, self.y + 15)
+                        ]
+                        return pygame.draw.polygon(screen, (0, 0, 0), puntos, 2).collidepoint(pos)
+            
+            def game_over(puntaje):
+                while True:
+                    screen.blit(BGFigurasYColores, (0,0))
+                    pos = pygame.mouse.get_pos()
+
+                    contorno("GAME OVER", get_font(100), "red", "black", 640, 280)
+                    contorno1(f"PUNTAJE: {puntaje}", get_font(60), "#75a743", "black", 640, 360)
+                    contorno1("PRESS R TO RESET", get_font(40), "#e8c170", "black", 640, 420)
+                    # Dibujar texto
+                    contorno1(objetivo_texto, get_font(30), "#e8c170", "black", 380, 40)
+
+                    # Dibujar temporizador
+                    contorno1(f"TIEMPO RESTANTE: {int(tiempo_restante)} s", get_font(30), "#a53030","black", 380, 80)
+
+                    CYF_exit = Spray(base_image=BotonExit, hover_image=BotonExitSpray, pos=(1220, 660))
+                    CYF_exit.changeImage(pos)
+                    CYF_exit.update(screen)  # Dibujar el botón
+
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                        if event.type == pygame.USEREVENT:  # Si termina una canción
+                            avanzar_playlist(playlist)
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_r:
+                                CYF_tutorial_game()
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            if CYF_exit.checkForInput(pos):
+                                CYF_tutorial()
+                    
+                    pygame.display.update()
+
+            # Función principal del juego
+            
+            running = True
+            nivel = 1
+            puntaje = 0
+            tiempo_limite = 5  # Tiempo inicial en segundos
+
+            while running:
+                # Generar figuras
+                figuras = []
+                for _ in range(nivel + 2):
+                    x = random.randint(50, WIDTH - 100)
+                    y = random.randint(50, HEIGHT - 100)
+                    color = random.choice(list(COLORS.values()))
+                    tipo = random.choice(["CIRCULO", "CUADRADO", "TRIANGULO", "RECTANGULO", "ROMBO", "ESTRELLA", "OVALO", "PENTAGONO", "HEXAGONO"])
+                    figuras.append(Figura(x, y, color, tipo))
+
+                # Elegir figura objetivo
+                objetivo = random.choice(figuras)
+                nombre_color = [k for k, v in COLORS.items() if v == objetivo.color][0]
+
+                # Identificar todas las figuras que coincidan con el objetivo
+                figuras_objetivo = [figura for figura in figuras if figura.color == objetivo.color and figura.tipo == objetivo.tipo]
+
+                objetivo_texto = f"HAZ CLIC EN UN {objetivo.tipo} DE COLOR {nombre_color}"
+
+                # Temporizador
+                tiempo_restante = tiempo_limite
+                inicio_nivel = pygame.time.get_ticks()
+
+                if puntaje == 10:
+                    CYF_tutorial()
+
+                # Ciclo del nivel
+                while True:
+                    screen.blit(BGFigurasYColores, (0,0))
+                    pos = pygame.mouse.get_pos()
+
+                    # Calcular tiempo restante
+                    tiempo_actual = pygame.time.get_ticks()
+                    tiempo_restante = tiempo_limite - (tiempo_actual - inicio_nivel) / 1000
+
+                    if tiempo_restante <= 0:
+                        game_over(puntaje)
+
+                    # Dibujar texto
+                    contorno1(objetivo_texto, get_font(30), "#e8c170", "black", 380, 40)
+
+                    # Dibujar temporizador
+                    contorno1(f"TIEMPO RESTANTE: {int(tiempo_restante)} s", get_font(30), "#a53030","black", 380, 80)
+
+                    CYF_exit = Spray(base_image=BotonExit, hover_image=BotonExitSpray, pos=(1220, 660))
+                    CYF_exit.changeImage(pos)
+                    CYF_exit.update(screen)  # Dibujar el botón
+
+                    # Dibujar figuras
+                    for figura in figuras:
+                        figura.dibujar(screen)
+
+                    # Manejo de eventos
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            if any(figura.clicado(pos) for figura in figuras_objetivo):
+                                puntaje += 1
+                                nivel += 1
+                                tiempo_limite += 0.5  # Incrementar tiempo límite con cada acierto
+                                break
+                            else:
+                                game_over(puntaje)
+                            if CYF_exit.checkForInput(pos):
+                                CYF_tutorial()
+
+                        if event.type == pygame.USEREVENT:  # Si termina una canción
+                            avanzar_playlist(playlist)
+
+                    else:
+                        # Actualizar pantalla
+                        pygame.display.flip()
+                        clock.tick(FPS)
+                        continue
+                    break
+
+        while True:
+            Tutorial_CYF_mouse_pos = pygame.mouse.get_pos()
+            screen.blit(BGTutorialCYF, (0,0))
+            contorno("TUTORIAL", get_font(100), "#75a743", "black", 640, 80)
+
+            contorno1("¡Bienvenido al juego de colores y figuras! Tu ", get_font(40), "#e8c170", "black", 640, 150)
+            contorno1("objetivo es seguir las indicaciones que aparecerán", get_font(40), "#e8c170", "black", 640, 200)
+            contorno1("en pantalla, como: 'Selecciona el cuadrado rojo'.", get_font(40), "#e8c170", "black", 640, 250)
+            contorno1("Observa las figuras y colores que se muestran, y ", get_font(40), "#e8c170", "black", 640, 300)
+            contorno1("toca la opción correcta antes de que se acabe el", get_font(40), "#e8c170", "black", 640, 350)
+            contorno1("tiempo. ¡Pon a prueba tu rapidez y atención!", get_font(40), "#e8c170", "black", 640, 400)
+
+            contorno1("TUTORIAL", get_font(30), "#4f8fba", "black", 1005, 450)
+            contorno1("BACK", get_font(30), "#a53030", "black", 270, 450)
+
+            CYF_tuto_back = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(270, 525))
+            CYF_tuto_back.changeImage(Tutorial_CYF_mouse_pos)
+            CYF_tuto_back.update(screen)  # Dibujar el botón
+
+            CYF_tuto_game = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(1005, 525))
+            CYF_tuto_game.changeImage(Tutorial_CYF_mouse_pos)
+            CYF_tuto_game.update(screen)  # Dibujar el botón
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if CYF_tuto_back.checkForInput(Tutorial_CYF_mouse_pos):
+                        menu_colores_y_figuras()
+                    if CYF_tuto_game.checkForInput(Tutorial_CYF_mouse_pos):
+                        CYF_tutorial_game()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            pygame.display.update()
+    
+    def CYF_scoreV():
+        pygame.display.set_caption("Score Colores Y Figuras")
+        loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Salir si se cierra la ventana
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            # Dibujar la barra de carga
+            if loading_bar.draw():  # Si la barra de carga está llena
+                break  # Detener el bucle principal cuando la barra esté llena
+
+            # Esperar un poco para que el evento de carga se vea
+            pygame.time.wait(100)
+        
+        def load_scores():
+            try:
+                with open("Top_scores_CYF.json", "r") as file:
+                    return json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                # Si no hay archivo o está corrupto, usar una lista predeterminada
+                return [{"name": "---", "score": 0} for _ in range(5)]
+
+        # Cargar los puntajes
+        top_scores = load_scores()
+
+        while True:
+            Score_CYF_mouse_pos = pygame.mouse.get_pos()
+            screen.blit(BGScoreCYF, (0, 0))
+
+            # Título de la pantalla de puntajes
+            contorno("TOP SCORES", get_font(100), "#4f8fba", "black", 640, 100)
+            contorno("RANK", get_font(80), "#e8c170", "black", 380, 220)
+            contorno("NAME", get_font(80), "#75a743", "black", 640, 220)
+            contorno("SCORE", get_font(80), "#a53030", "black", 900, 220)
+
+            # Dibujar la lista de puntajes
+            for i, entry in enumerate(top_scores):
+                rank_text = f"{i + 1}st" if i == 0 else f"{i + 1}nd" if i == 1 else f"{i + 1}rd" if i == 2 else f"{i + 1}th"
+                rank_text = get_font(50).render(rank_text, True, "black")
+                rank_text_rect = rank_text.get_rect(center=(380, 300 + i * 60))
+                screen.blit(rank_text, rank_text_rect)
+                name_text = get_font(50).render(entry["name"], True, "black")
+                name_text_rect = name_text.get_rect(center=(640, 300 + i * 60))
+                screen.blit(name_text, name_text_rect)
+                score_text = get_font(50).render(str(entry["score"]), True, "black")
+                score_text_rect = score_text.get_rect(center=(900, 300 + i * 60))
+                screen.blit(score_text, score_text_rect)
+
+            contorno1("BACK", get_font(40), "#a53030", "black", 170, 450)
+            
+            CYF_back = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(170, 535))
+            CYF_back.changeImage(Score_CYF_mouse_pos)
+            CYF_back.update(screen)  # Dibujar el botón
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if CYF_back.checkForInput(Score_CYF_mouse_pos):
+                        menu_colores_y_figuras()
+                if event.type == pygame.USEREVENT:  # Si termina una canción
+                    avanzar_playlist(playlist)
+
+            pygame.display.update()
 
     while True:
         screen.blit(BGMenuCYF, [0, 0])
@@ -2003,12 +2728,26 @@ def menu_colores_y_figuras():
         CYF_mouse_pos = pygame.mouse.get_pos()
 
         contorno("COLORES Y FIGURAS", get_font(100), "#444774", "black", 640, 110)
+        contorno1("BACK", get_font(40), "#a53030", "black", 270, 440)
+        contorno1("PLAY", get_font(40), "#e8c170", "black", 270, 205)
+        contorno1("TUTORIAL", get_font(40), "#75a743", "black", 1005, 205)
+        contorno1("SCORE", get_font(40), "#4f8fba", "black", 1005, 440)
 
-        CYF_back = Button(image=None, pos=(270, 560), 
-                            text_input="BACK", font=get_font(60), base_color="black", hovering_color="#ffecd6")
+        CYF_back = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(270, 525))
+        CYF_back.changeImage(CYF_mouse_pos)
+        CYF_back.update(screen)  # Dibujar el botón
 
-        CYF_back.changeColor(CYF_mouse_pos)
-        CYF_back.update(screen)
+        CYF_play = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(270, 290))
+        CYF_play.changeImage(CYF_mouse_pos)
+        CYF_play.update(screen)  # Dibujar el botón
+
+        CYF_tutorialB = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(1005, 290))
+        CYF_tutorialB.changeImage(CYF_mouse_pos)
+        CYF_tutorialB.update(screen)  # Dibujar el botón
+
+        CYF_score = Spray(base_image=CakeSpray, hover_image=CakeSprayS, pos=(1005, 525))
+        CYF_score.changeImage(CYF_mouse_pos)
+        CYF_score.update(screen)  # Dibujar el botón
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -2017,6 +2756,14 @@ def menu_colores_y_figuras():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if CYF_back.checkForInput(CYF_mouse_pos):
                     games()
+                if CYF_play.checkForInput(CYF_mouse_pos):
+                    CYF_game()
+                if CYF_tutorialB.checkForInput(CYF_mouse_pos):
+                    CYF_tutorial()
+                if CYF_score.checkForInput(CYF_mouse_pos):
+                    CYF_scoreV()
+            if event.type == pygame.USEREVENT:  # Si termina una canción
+                avanzar_playlist(playlist)
 
         pygame.display.update()
 
