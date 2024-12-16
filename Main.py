@@ -90,20 +90,51 @@ Sonido_Burbujas = pygame.mixer.Sound("assets/BurbujasLoading.mp3")
 #Efectos de sonido
 sounds_loadingbars = [
     pygame.mixer.Sound("assets/Loading.wav"),
-    pygame.mixer.Sound("assets/BurbujasLoading.wav")
+    pygame.mixer.Sound("assets/BurbujasLoading.wav"),
+    pygame.mixer.Sound("assets/Monedas.wav"),
+    pygame.mixer.Sound("assets/VidrioRoto.wav"),
+    pygame.mixer.Sound("assets/SimonDiceLoading.wav")
+]
+sounds_Reaction_Game = [
+    pygame.mixer.Sound("assets/POP.wav"),
+]
+sounds_Simon_Dice = [
+    pygame.mixer.Sound("assets/POP.wav"),
+]
+sounds_STM = [
+    pygame.mixer.Sound("assets/POP.wav"),
+]
+sounds_CYF = [
+    pygame.mixer.Sound("assets/POP.wav"),
 ]
 
 # Diccionario para almacenar volúmenes actuales
 volumen_actual = {
     "loadingbars": 0.5,
+    "ReactionGame": 1.0,
+    "SD": 0.5,
+    "STM": 0.5,
+    "CYF": 0.5
 }
 mute_estado = {
-    "loadingbars": False,  
+    "loadingbars": False,
+    "ReactionGame": False,
+    "SD": False,
+    "STM": False,
+    "CYF": False
 }
 
 # Ajustar volúmenes iniciales
 for sonido in sounds_loadingbars:
     sonido.set_volume(volumen_actual["loadingbars"])
+for sonido in sounds_Reaction_Game:
+    sonido.set_volume(volumen_actual["ReactionGame"])
+for sonido in sounds_Simon_Dice:
+    sonido.set_volume(volumen_actual["SD"])
+for sonido in sounds_STM:
+    sonido.set_volume(volumen_actual["STM"])
+for sonido in sounds_CYF:
+    sonido.set_volume(volumen_actual["CYF"])
 
 # Función para ajustar el volumen de una lista y actualizar su almacenamiento
 def ajustar_volumen(lista_sonidos, clave, incremento):
@@ -372,6 +403,10 @@ def volumen():
         contorno("VOLUME", get_font(100), "#d08159", "black", 640, 100)
         contorno1(f"MUSIC VOLUME: {current_volume * 100:.0f}%", get_font(60), "#ffecd6", "black", 450, 200)
         contorno1(f"LOADING VOLUME: {volumen_actual['loadingbars']*100:.0f}%", get_font(60), "#ffecd6", "black", 410, 280)
+        contorno1(f"REACTION GAME: {volumen_actual['ReactionGame']*100:.0f}%", get_font(60), "#ffecd6", "black", 410, 360)
+        contorno1(f"SIMON DICE: {volumen_actual['SD']*100:.0f}%", get_font(60), "#ffecd6", "black", 410, 440)
+        contorno1(f"STEAL THE MONEY: {volumen_actual['STM']*100:.0f}%", get_font(60), "#ffecd6", "black", 400, 520)
+        contorno1(f"COLORES Y FIGURAS: {volumen_actual['CYF']*100:.0f}%", get_font(60), "#ffecd6", "black", 390, 600)
 
         #Botones para volumen musica
         Subir_Volumen_Musica = Button(SubirVolumen, pos=(860, 195), 
@@ -399,9 +434,61 @@ def volumen():
                             text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
         Volumen_Mute_loadingbars.update(screen)
 
+        #Botones para volumen Reaction Game
+        Subir_Volumen_ReactionGame = Button(SubirVolumen, pos=(860, 355), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_ReactionGame.update(screen)
+
+        Bajar_Volumen_ReactionGame = Button(BajarVolumen, pos=(960, 355), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_ReactionGame.update(screen)
+
+        Volumen_Mute_ReactionGame = Button(VolumenMute, pos=(1060, 355), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_ReactionGame.update(screen)
+
+        #Botones para volumen SD
+        Subir_Volumen_SD = Button(SubirVolumen, pos=(860, 435), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_SD.update(screen)
+
+        Bajar_Volumen_SD = Button(BajarVolumen, pos=(960, 435), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_SD.update(screen)
+
+        Volumen_Mute_SD = Button(VolumenMute, pos=(1060, 435), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_SD.update(screen)
+
+        #Botones para volumen STM
+        Subir_Volumen_STM = Button(SubirVolumen, pos=(860, 515), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_STM.update(screen)
+
+        Bajar_Volumen_STM = Button(BajarVolumen, pos=(960, 515), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_STM.update(screen)
+
+        Volumen_Mute_STM = Button(VolumenMute, pos=(1060, 515), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_STM.update(screen)
+
+        #Botones para volumen CYF
+        Subir_Volumen_CYF = Button(SubirVolumen, pos=(860, 595), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Subir_Volumen_CYF.update(screen)
+
+        Bajar_Volumen_CYF = Button(BajarVolumen, pos=(960, 595), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Bajar_Volumen_CYF.update(screen)
+
+        Volumen_Mute_CYF = Button(VolumenMute, pos=(1060, 595), 
+                            text_input="", font=get_font(75), base_color="#000000", hovering_color="White")
+        Volumen_Mute_CYF.update(screen)
+
         #Botón de regreso al menú principal
-        About_back = Button(image=pygame.image.load("assets/MainButton.png"), pos=(640, 600), 
-                            text_input="BACK", font=get_font(75), base_color="#000000", hovering_color="White")
+        About_back = Button(image=None, pos=(640, 680), 
+                            text_input="BACK", font=get_font(60), base_color="#d08159", hovering_color="White")
 
         #Actualizar color y estado del botón
         About_back.changeColor(Volumen_mouse_pos)
@@ -445,6 +532,42 @@ def volumen():
                     print(f"Volumen loadingbars: {volumen_actual['loadingbars']*100:.0f}%")
                 if Volumen_Mute_loadingbars.checkForInput(Volumen_mouse_pos):
                     toggle_mute(sounds_loadingbars, "loadingbars")
+                #Reaction Game
+                if Subir_Volumen_ReactionGame.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "ReactionGame", 0.05)
+                    print(f"Volumen Reaction Game: {volumen_actual['ReactionGame']*100:.0f}%")
+                if Bajar_Volumen_ReactionGame.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "ReactionGame", -0.05)
+                    print(f"Volumen Reaction Game: {volumen_actual['ReactionGame']*100:.0f}%")
+                if Volumen_Mute_ReactionGame.checkForInput(Volumen_mouse_pos):
+                    toggle_mute(sounds_Reaction_Game, "ReactionGame")
+                #SD
+                if Subir_Volumen_SD.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "SD", 0.05)
+                    print(f"Volumen SD: {volumen_actual['SD']*100:.0f}%")
+                if Bajar_Volumen_SD.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "SD", -0.05)
+                    print(f"Volumen SD: {volumen_actual['SD']*100:.0f}%")
+                if Volumen_Mute_SD.checkForInput(Volumen_mouse_pos):
+                    toggle_mute(sounds_Reaction_Game, "SD")
+                #STM
+                if Subir_Volumen_STM.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "STM", 0.05)
+                    print(f"Volumen STM: {volumen_actual['STM']*100:.0f}%")
+                if Bajar_Volumen_STM.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "STM", -0.05)
+                    print(f"Volumen STM: {volumen_actual['STM']*100:.0f}%")
+                if Volumen_Mute_STM.checkForInput(Volumen_mouse_pos):
+                    toggle_mute(sounds_Reaction_Game, "STM")
+                #CYF
+                if Subir_Volumen_CYF.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "CYF", 0.05)
+                    print(f"Volumen CYF: {volumen_actual['CYF']*100:.0f}%")
+                if Bajar_Volumen_CYF.checkForInput(Volumen_mouse_pos):
+                    ajustar_volumen(sounds_Reaction_Game, "CYF", -0.05)
+                    print(f"Volumen CYF: {volumen_actual['CYF']*100:.0f}%")
+                if Volumen_Mute_CYF.checkForInput(Volumen_mouse_pos):
+                    toggle_mute(sounds_Reaction_Game, "CYF")
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     # Subir volumen
@@ -627,7 +750,7 @@ def menu_reaction_game():
                 
                             # Cambiar temporalmente a la imagen de reemplazo
                             mostrar_reemplazo = True
-                            Sonido_POP.play()
+                            sounds_Reaction_Game[0].play(loops=0)
                             tiempo_cambio = pygame.time.get_ticks()
 
                             # Marcar la burbuja como clickeada
@@ -789,7 +912,7 @@ def menu_reaction_game():
                 
                                 # Cambiar temporalmente a la imagen de reemplazo
                                 mostrar_reemplazo = True
-                                Sonido_POP.play()
+                                sounds_Reaction_Game[0].play(loops=0)
                                 tiempo_cambio = pygame.time.get_ticks()
 
                                 # Marcar la burbuja como clickeada
@@ -958,6 +1081,7 @@ def menu_simon_dice():
     def simon_dice():
         loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[4].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1261,6 +1385,7 @@ def menu_simon_dice():
         pygame.display.set_caption("Tutorial Simón Dice")
         loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[4].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1317,6 +1442,7 @@ def menu_simon_dice():
         pygame.display.set_caption("Scores Simón Dice")
         loading_bar = LoadingBar(screen, BGSimonDiceLoading, start_color=(240, 246, 240), end_color=(0, 0, 0), text_color="#f0f6f0", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[4].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1387,6 +1513,7 @@ def menu_simon_dice():
 
             pygame.display.update()
 
+    sounds_loadingbars[4].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1446,6 +1573,7 @@ def menu_puzzle_numerico():
     pygame.display.set_caption("Menú Steal The Money")
     loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
 
+    sounds_loadingbars[2].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1475,6 +1603,7 @@ def menu_puzzle_numerico():
         pygame.display.set_caption("Steal The Money")
         loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[2].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1663,6 +1792,7 @@ def menu_puzzle_numerico():
         pygame.display.set_caption("Tutorial Steal The Money")
         loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[2].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1690,6 +1820,7 @@ def menu_puzzle_numerico():
             pygame.display.set_caption("Steal The Money")
             loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
 
+            sounds_loadingbars[2].play(loops=0)
             while True:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -1899,6 +2030,7 @@ def menu_puzzle_numerico():
         loading_bar = LoadingBar(screen, BGLoadingSTM, start_color=(225, 203, 134), end_color=(224, 153, 48), text_color="#e1cb86", loading_time=1.5, segments=10)
         SCORES_FILE = "top_scores_STM.json"
 
+        sounds_loadingbars[2].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -2012,6 +2144,7 @@ def menu_colores_y_figuras():
     pygame.display.set_caption("Colores Y Figuras")
     loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
 
+    sounds_loadingbars[3].play(loops=0)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -2034,6 +2167,7 @@ def menu_colores_y_figuras():
         pygame.display.set_caption("Colores Y Figuras")
         loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[3].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -2324,6 +2458,7 @@ def menu_colores_y_figuras():
         pygame.display.set_caption("Tutorial Colores Y Figuras")
         loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[3].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
@@ -2655,6 +2790,7 @@ def menu_colores_y_figuras():
         pygame.display.set_caption("Score Colores Y Figuras")
         loading_bar = LoadingBar(screen, BGLoadingCYF, start_color=(232, 193, 112), end_color=(165, 48, 48), text_color="#4f8fba", loading_time=1.5, segments=10)
 
+        sounds_loadingbars[3].play(loops=0)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Salir si se cierra la ventana
