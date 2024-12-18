@@ -4,7 +4,7 @@ from utils.button import Button
 #Importar la clase Spray del codigo spray
 from utils.spray import Spray
 from utils.loadingbar import LoadingBar
-
+    
 #Iniciar pygame
 pygame.init()
 
@@ -18,7 +18,6 @@ pygame.display.set_caption("Menú")
 player_name = ""
 
 #Main Menu
-FondoAzul = pygame.image.load("assets/FondoAzul.png")
 FondoMain = pygame.image.load("assets/FondoMainMenu.png")
 BGMapache = pygame.image.load("assets/BGMapache.png")
 BotonVolumen = pygame.image.load("assets/BotonVolumen.png")
@@ -1431,7 +1430,7 @@ def menu_simon_dice():
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if Tutorial_reaction_game_b.checkForInput(Tutorial_reaction_game_mouse_pos):
-                        tutorialreactiongame()
+                        tutorial_simon_dice()
                     if Back_tutorial_reaction_game_button.checkForInput(Tutorial_reaction_game_mouse_pos):
                         menu_simon_dice()
                 if event.type == pygame.USEREVENT:  # Si termina una canción
